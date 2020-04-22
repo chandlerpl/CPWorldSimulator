@@ -17,14 +17,12 @@
   <ItemGroup>
     <ClInclude Include="GpuTimer.h" />
     <ClInclude Include="SimplexNoiseCUDA.h" />
-    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimplexNoiseCUDA.cpp" />
-    <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{22C7518D-DAA3-4999-87C4-AC036F3E3973}</ProjectGuid>
