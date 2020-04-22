@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Configurations>Debug;Release;Release - NoGPU</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Life\Animals\" />
+    <Folder Include="Life\Plants\" />
+  </ItemGroup>
+
+</Project>
