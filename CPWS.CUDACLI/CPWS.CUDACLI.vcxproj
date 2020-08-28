@@ -15,7 +15,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GpuTimer.h" />
     <ClInclude Include="SimplexNoiseCUDA.h" />
   </ItemGroup>
   <ItemGroup>

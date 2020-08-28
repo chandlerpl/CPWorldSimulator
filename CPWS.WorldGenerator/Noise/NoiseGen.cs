@@ -8,7 +8,7 @@ namespace CPWS.WorldGenerator.Noise
 {
     public abstract class NoiseGen
     {
-        protected uint offset { get; } = 1455382547;
+        protected uint Offset { get; } = 1455382547;
 
         private uint seed;
         private double persistence;
@@ -25,17 +25,18 @@ namespace CPWS.WorldGenerator.Noise
                 if (!useCuda)
                     return false;
 
-                bool isCudaReady = GPUUtilities.CheckCUDACapability();
-                if (useCuda && !isCudaReady)
+                if (!GPUUtilities.CheckCUDACapability())
                     useCuda = false;
 
-                return useCuda; 
-            } set => useCuda = value; }
+                return useCuda;
+            } set => useCuda = value; 
+        }
+
         public virtual int CudaId { get => GPUUtilities.GetStrongestCudaGpu(); }
 
         public NoiseGen(uint seed)
         {
-            Seed = seed * offset;
+            Seed = seed;
         }
 
         public abstract double Noise(params double[] vals);

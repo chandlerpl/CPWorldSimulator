@@ -1,0 +1,18 @@
+﻿<Window x:Class="WorldGenerator.VisualTests.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WorldGenerator.VisualTests"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="1080" Width="1920" ResizeMode="NoResize">
+    <TabControl x:Name="TabController">
+        <TabItem Header="Home Page">
+            <Grid Background="#FFE5E5E5">
+                <Button x:Name="HeatmapPage" Content="Heatmap" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="220" Click="HeatmapPage_Click"/>
+                <Button x:Name="SimplexNoisePage" Content="SimplexNoise" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="220" Click="SimplexNoisePage_Click"/>
+                <Button x:Name="VoronoiPage" Content="Voronoi Diagram" HorizontalAlignment="Left" Margin="10,130,0,0" VerticalAlignment="Top" Width="220" Click="VoronoiPage_Click"/>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</Window>

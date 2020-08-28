@@ -6,6 +6,8 @@ using CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths;
 using CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure;
 using CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure.Points;
 using CPWS.WorldGenerator.Noise;
+using System.Dynamic;
+using System.Diagnostics;
 
 namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 {
@@ -18,29 +20,42 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
         public LinkedList<VoronoiEdge> Edges { get; private set; }
         public List<Tuple<Point, Point>> Delaunay { get; private set; }
 
-        public int pointCount = 250;
+        public int Seed { get => seed; set { seed = value; rand = value == 0 ? new Random() : new Random(seed); } }
+        public int PointCount { get; set; }
 
-        public double maxX = 1920;
-        public double maxY = 1080;
+        private double minX = 0;
+        private double minY = 0;
+        private double maxX = 1920;
+        private double maxY = 1080;
 
+        public double MinX { get => minX; set { minX = value; } }
+        public double MinY { get => minY; set { minY = value; } }
 
-        private bool UseDelaunay = false;
-        private bool UseNoisyEdges = true;
-        private int NoisyEdgesNo = 9;
+        public double MaxX { get => maxX; set { maxX = value; } }
+        public double MaxY { get => maxY; set {  maxY = value; } }
 
-        public FortunesAlgorithm(int seed = 0, int pointCount = 250, bool useDelaunay = false, bool useNoisyEdges = true, int noisyEdgesNo = 9, double maxX = 1920, double maxY = 1080)
+        public bool UseDelaunay { get; set; } = false;
+        public bool UseNoisyEdges { get; set; } = false;
+        public int NoisyEdgesNo { get; set; } = 9;
+
+        public FortunesAlgorithm(int seed = 0, int pointCount = 250, double minX = 0, double minY = 0, double maxX = 1920, double maxY = 1080, bool useDelaunay = false, int noisyEdges = 0)
         {
-            this.seed = seed;
-            rand = seed == 0 ? new Random() : new Random(seed);
-            this.pointCount = pointCount;
-            this.maxX = maxX;
-            this.maxY = maxY;
+            Seed = seed;
+            PointCount = pointCount;
+
+            MaxX = maxX;
+            MaxY = maxY;
+            MinX = minX;
+            MinY = minY;
 
             UseDelaunay = useDelaunay;
-            UseNoisyEdges = useNoisyEdges;
-            NoisyEdgesNo = noisyEdgesNo;
+            UseNoisyEdges = noisyEdges > 0;
+            NoisyEdgesNo = noisyEdges;
+        }
 
-            Init(GeneratePoints());
+        public void Generate(List<FSite> sites = null)
+        {
+            Init(sites ?? GeneratePoints());
         }
 
         private void Init(List<FSite> points)
@@ -64,7 +79,7 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
         {
             List<FSite> sites = new List<FSite>();
 
-            for (var i = 0; i < pointCount; i++)
+            for (var i = 0; i < PointCount; i++)
             {
                 sites.Add(new FSite(
                     rand.Next((int)(0), (int)maxX),
@@ -159,7 +174,7 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             }
         }
 
-        public void GenerateVoronoi()
+        private void GenerateVoronoi()
         {
             var eventQueue = new MinHeap<FortuneEvent>(5 * Sites.Count);
             foreach (var s in Sites)
@@ -190,6 +205,104 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
                 }
             }
 
+            Point topLeft = new Point(minX, minY);
+            Point topRight = new Point(maxX, minY);
+            Point bottomLeft = new Point(minX, maxY);
+            Point bottomRight = new Point(maxX, maxY);
+
+            VoronoiEdge topLeftEdge = null;
+            double TLEdgeDistance = double.PositiveInfinity;
+            VoronoiEdge topRightEdge = null;
+            double TREdgeDistance = double.PositiveInfinity;
+            VoronoiEdge bottomLeftEdge = null;
+            double BLEdgeDistance = double.PositiveInfinity;
+            VoronoiEdge bottomRightEdge = null;
+            double BREdgeDistance = double.PositiveInfinity;
+
+            foreach (VoronoiEdge edge in edges)
+            {
+                double Dist = Point.Distance(topLeft, edge.StartPoint);
+                if (Dist < TLEdgeDistance)
+                {
+                    topLeftEdge = edge;
+                    TLEdgeDistance = Dist;
+                    continue;
+                }
+                Dist = Point.Distance(topRight, edge.StartPoint);
+                if (Dist < TREdgeDistance)
+                {
+                    topRightEdge = edge;
+                    TREdgeDistance = Dist;
+                    continue;
+                }
+                Dist = Point.Distance(bottomLeft, edge.StartPoint);
+                if (Dist < BLEdgeDistance)
+                {
+                    bottomLeftEdge = edge;
+                    BLEdgeDistance = Dist;
+                    continue;
+                }
+                Dist = Point.Distance(bottomRight, edge.StartPoint);
+                if (Dist < BREdgeDistance)
+                {
+                    bottomRightEdge = edge;
+                    BREdgeDistance = Dist;
+                    continue;
+                }
+            }
+
+            if (topLeftEdge != null)
+            {
+                Point end = topLeftEdge.EndPoint;
+                topLeftEdge.EndPoint = topLeft;
+                if (topLeftEdge.Neighbor != null)
+                    topLeftEdge.Neighbor.StartPoint = topLeft;
+                //edges.AddLast(new VoronoiEdge(topLeft, topLeftEdge.Left, topLeftEdge.Right, end));
+            }
+            else
+            {
+                Trace.WriteLine("Top Left was null!");
+            }
+
+
+            if (topRightEdge != null)
+            {
+                Point end = topRightEdge.EndPoint;
+                topRightEdge.EndPoint = topRight;
+                if (topRightEdge.Neighbor != null)
+                    topRightEdge.Neighbor.StartPoint = topRight;
+                //edges.AddLast(new VoronoiEdge(topRight, topRightEdge.Left, topRightEdge.Right, end));
+            }
+            else
+            {
+                Trace.WriteLine("Top Right was null!");
+            }
+
+            if (bottomLeftEdge != null)
+            {
+                Point end = bottomLeftEdge.EndPoint;
+                bottomLeftEdge.EndPoint = bottomLeft;
+                if (bottomLeftEdge.Neighbor != null)
+                    bottomLeftEdge.Neighbor.StartPoint = bottomLeft;
+                //edges.AddLast(new VoronoiEdge(bottomLeft, bottomLeftEdge.Left, bottomLeftEdge.Right, end));
+            }
+            else
+            {
+                Trace.WriteLine("Bottom Left was null!");
+            }
+
+            if (bottomRightEdge != null)
+            {
+                Point end = bottomRightEdge.EndPoint;
+                bottomRightEdge.EndPoint = bottomRight;
+                if (bottomRightEdge.Neighbor != null)
+                    bottomRightEdge.Neighbor.StartPoint = bottomRight;
+                //edges.AddLast(new VoronoiEdge(bottomRight, bottomRightEdge.Left, bottomRightEdge.Right, end));
+            }
+            else
+            {
+                Trace.WriteLine("Bottom Right was null!");
+            }
 
             //clip edges
             var edgeNode = edges.First;
@@ -198,7 +311,7 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
                 var edge = edgeNode.Value;
                 var next = edgeNode.Next;
 
-                var valid = ClipEdge(edge, 0, 0, maxX, maxY);
+                var valid = ClipEdge(edge, minX, minY, maxX, maxY);
                 if (!valid)
                     edges.Remove(edgeNode);
 
@@ -211,6 +324,7 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
                 //advance
                 edgeNode = next;
             }
+
             this.Edges = edges;
         }
 

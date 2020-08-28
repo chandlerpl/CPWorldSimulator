@@ -28,6 +28,10 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure.Points
 
         public static double Dot(Point lhs, Point rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y; }
 
+        public static double DistanceSquared(Point from, Point to) { return ((to.X - from.X) * (to.X - from.X)) + ((to.Y - from.Y) * (to.Y - from.Y)); }
+
+        public static double Distance(Point from, Point to) { return Math.Sqrt(DistanceSquared(from, to)); }
+
         public static double Angle(Point from, Point to)
         {
             // sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers

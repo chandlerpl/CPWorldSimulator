@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
-using CPWS.CUDA.Noise;
 using CP.Common.Utilities;
+using CPWS.CUDA.Noise;
 
 namespace CPWS.WorldGenerator.Noise
 {
@@ -71,7 +70,6 @@ namespace CPWS.WorldGenerator.Noise
 
             Scale = scale;
             Persistence = persistence;
-            Seed = seed * offset;
 
             generatePermutations(Seed);
         }
@@ -123,84 +121,73 @@ namespace CPWS.WorldGenerator.Noise
             }
         }
 
-        public override double Octave(int iterations, double[] vals)
+        public override async Task<double[,]> NoiseMap(int iterations, params int[] vals)
         {
-            switch (vals.Length)
-            {
-                case 1:
-                    return Octave1D(iterations, vals[0]);
-                case 2:
-                    return Octave2D(iterations, vals[0], vals[1]);
-                case 3:
-                    return Octave3D(iterations, vals[0], vals[1], vals[2]);
-                case 4:
-                    return Octave4D(iterations, vals[0], vals[1], vals[2], vals[3]);
-                default:
-                    throw new NotImplementedException();
-            }
-        }
+            Task[] tasks = new Task[vals[1]];
 
-        public override async Task<double[,]> NoiseMap(int iterations, int[] vals)
-        {
-            switch (vals.Length)
+            var buffer = new double[vals[1], vals[0]];
+
+            for (int y = 0; y < vals[1]; y++)
             {
-                case 1:
-                    return await NoiseMap1D(iterations, vals[0]);
-                case 2:
-                    return await NoiseMap2D(iterations, vals[0], vals[1]);
-                case 3:
-                    if(UseCuda)
-                        return SimplexNoiseCUDA.NoiseMap(Perm, Scale, Persistence, iterations, vals[0], vals[1], vals[2], GPUUtilities.GetStrongestCudaGpu());
-                    else
-                        return await NoiseMap3D(iterations, vals[0], vals[1], vals[2]);
-                case 4:
-                    return await NoiseMap4D(iterations, vals[0], vals[1], vals[2], vals[3]);
-                default:
-                    throw new NotImplementedException();
+                int yCopy = y;
+                tasks[y] = Task.Factory.StartNew(() =>
+                {
+                    for (int x = 0; x < vals[0]; x++)
+                    {
+                        buffer[yCopy, x] = Octave(iterations, x, yCopy, 0);
+                    }
+                });
             }
+
+            await Task.WhenAll(tasks);
+
+            return buffer;
         }
 
         public override double[,] NoiseMapNotAsync(int iterations, params int[] vals)
         {
-            switch (vals.Length)
-            {
-                case 1:
-                    return NoiseMap1D(iterations, vals[0]).Result;
-                case 3:
-                    return NoiseMap3DNA(iterations, vals[0], vals[1], vals[2]);
-                default:
-                    throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
 
-        public async Task<double[,]> NoiseMap1D(int iterations, int length)
+        private double[,] NoiseMap3DNA(int iterations, int width, int height, int layer)
         {
-            var buffer = new double[1, length];
+            var buffer = new double[height, width];
 
-            for (int y = 0; y < length; y++)
+            for (int y = 0; y < height; y++)
             {
-                buffer[0, y] = Octave1D(iterations, y);
+                for (int x = 0; x < width; x++)
+                {
+                    buffer[y, x] = Octave(iterations, x, y, layer);
+                }
             }
 
             return buffer;
         }
 
-        private double Octave1D(int iterations, double xin)
+        public override double Octave(int iterations, params double[] vals)
         {
             double maxAmp = 0;
             double amp = 1;
             double freq = Scale;
             double noise = 0;
 
+            int dimensions = vals.Length;
+            double[] nVals = new double[dimensions];
+
             for (int i = 0; i < iterations; ++i)
             {
-                noise += Noise1D(xin * freq) * amp;
+                for (int j = 0; j < dimensions; j++)
+                    nVals[j] = vals[j] * freq;
+
+                noise += Noise(nVals) * amp;
                 maxAmp += amp;
                 amp *= Persistence;
                 freq *= 2;
             }
 
-            return noise / maxAmp;
+            noise /= maxAmp;
+
+            return noise;
         }
 
         private double Noise1D(double xin)
@@ -238,50 +225,6 @@ namespace CPWS.WorldGenerator.Noise
             }
 
             return 70.0 * (n0 + n1);
-        }
-
-        private async Task<double[,]> NoiseMap2D(int iterations, int width, int height)
-        {
-            Task[] tasks = new Task[height];
-
-            var buffer = new double[height, width];
-
-            for (int y = 0; y < height; y++)
-            {
-                int yCopy = y;
-                tasks[y] = Task.Factory.StartNew(() =>
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        buffer[yCopy, x] = Octave2D(iterations, x, yCopy);
-                    }
-                });
-            }
-
-            await Task.WhenAll(tasks);
-
-            return buffer;
-        }
-
-        private double Octave2D(int iterations, double xin, double yin)
-        {
-            double maxAmp = 0;
-            double amp = 1;
-            double freq = Scale;
-            double noise = 0;
-
-            for (int i = 0; i < iterations; ++i)
-            {
-                noise += Noise2D(xin * freq, yin * freq) * amp;
-                maxAmp += amp;
-                amp *= Persistence;
-                freq *= 2;
-            }
-
-
-            noise /= maxAmp;
-
-            return noise;
         }
 
         private double Noise2D(double xin, double yin)
@@ -339,286 +282,125 @@ namespace CPWS.WorldGenerator.Noise
             return 30.0 * (n0 + n1 + n2);
         }
 
-        private async Task<double[,]> NoiseMap3D(int iterations, int width, int height, int layer)
+        private double Noise3D(params double[] vals)
         {
-            Task[] tasks = new Task[height];
+            int dimensions = vals.Length;
+            double G = GValues(dimensions);
 
-            var buffer = new double[height, width];
+            double s = 0;
+            foreach (double v in vals)
+                s += v;
+            s *= FValues(dimensions);
 
-            for (int y = 0; y < height; y++)
-            {
-                int yCopy = y;
-                tasks[y] = Task.Factory.StartNew(() =>
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        buffer[yCopy, x] = Octave3D(iterations, x, yCopy, layer);
-                    }
-                });
-            }
-
-            await Task.WhenAll(tasks);
-
-            return buffer;
-        }
-
-        private double[,] NoiseMap3DNA(int iterations, int width, int height, int layer)
-        {
-            var buffer = new double[height, width];
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    buffer[y, x] = Octave3D(iterations, x, y, layer);
-                }
-            }
-
-            return buffer;
-        }
-
-        private async Task<double[,]> NoiseMap3D2(int iterations, int width, int height, int layer)
-        {
-            Task[] tasks = new Task[height];
-
-            var buffer = new double[height, width];
-
-            for (int y = 0; y < height; y++)
-            {
-                int yCopy = y;
-                tasks[y] = Task.Factory.StartNew(() =>
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        double val = Octave3D(iterations, x, yCopy, layer);
-
-                        if (val < 0)
-                            val = -1;
-
-                        buffer[yCopy, x] = val;
-                    }
-                });
-            }
-
-            await Task.WhenAll(tasks);
-
-            return buffer;
-        }
-
-        private double Octave3D(int iterations, double xin, double yin, double zin)
-        {
-            double maxAmp = 0;
-            double amp = 1;
-            double freq = Scale;
-            double noise = 0;
-
-            for (int i = 0; i < iterations; ++i)
-            {
-                noise += Noise3D(xin * freq, yin * freq, zin * freq) * amp;
-                maxAmp += amp;
-                amp *= Persistence;
-                freq *= 2;
-            }
-
-            noise /= maxAmp;
-
-            return noise;
-        }
-
-        private double Noise3D(double xin, double yin, double zin)
-        {
-            double n0, n1, n2, n3;
-
-            double G = GValues(3);
-            double s = (xin + yin + zin) * FValues(3);
-            int i = (int)Math.Floor(xin + s);
-            int j = (int)Math.Floor(yin + s);
-            int k = (int)Math.Floor(zin + s);
-            double t = (i + j + k) * G;
-            double X0 = i - t;
-            double Y0 = j - t;
-            double Z0 = k - t;
-            double x0 = xin - X0;
-            double y0 = yin - Y0;
-            double z0 = zin - Z0;
-
-            int i1, j1, k1;
-            int i2, j2, k2;
-            if (x0 >= y0)
-            {
-                if (y0 >= z0)
-                { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0; }
-                else if (x0 >= z0) { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1; }
-                else { i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1; }
-            }
-            else
-            { // x0<y0
-                if (y0 < z0) { i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1; }
-                else if (x0 < z0) { i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1; }
-                else { i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0; }
-            }
-
-            double x1 = x0 - i1 + G;
-            double y1 = y0 - j1 + G;
-            double z1 = z0 - k1 + G;
-            double x2 = x0 - i2 + 2.0 * G;
-            double y2 = y0 - j2 + 2.0 * G;
-            double z2 = z0 - k2 + 2.0 * G;
-            double x3 = x0 - 1.0 + 3.0 * G;
-            double y3 = y0 - 1.0 + 3.0 * G;
-            double z3 = z0 - 1.0 + 3.0 * G;
-
-            int ii = i & 255;
-            int jj = j & 255;
-            int kk = k & 255;
-
-            int gi0 = (Perm[ii + Perm[jj + Perm[kk]]] % 12);
-            int gi1 = (Perm[ii + i1 + Perm[jj + j1 + Perm[kk + k1]]] % 12);
-            int gi2 = (Perm[ii + i2 + Perm[jj + j2 + Perm[kk + k2]]] % 12);
-            int gi3 = (Perm[ii + 1 + Perm[jj + 1 + Perm[kk + 1]]] % 12);
-
-            double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-            if (t0 < 0) n0 = 0.0;
-            else
-            {
-                t0 *= t0;
-                n0 = t0 * t0 * dot(grad3[gi0], new double[3] { x0, y0, z0 });
-            }
-            double t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-            if (t1 < 0) n1 = 0.0;
-            else
-            {
-                t1 *= t1;
-                n1 = t1 * t1 * dot(grad3[gi1], new double[3] { x1, y1, z1 });
-            }
-            double t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-            if (t2 < 0) n2 = 0.0;
-            else
-            {
-                t2 *= t2;
-                n2 = t2 * t2 * dot(grad3[gi2], new double[3] { x2, y2, z2 });
-            }
-            double t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-            if (t3 < 0) n3 = 0.0;
-            else
-            {
-                t3 *= t3;
-                n3 = t3 * t3 * dot(grad3[gi3], new double[3] { x3, y3, z3 });
-            }
-
-            return 32.0 * (n0 + n1 + n2 + n3);
-        }
-
-        private double Noise3D2(params double[] dimensionValues)
-        {
-            int dimensions = dimensionValues.Length;
-            double[] nth = new double[dimensions + 1];
-
-            double F = (Math.Sqrt(dimensions + 1) - 1.0) / dimensions;
-            double G = (dimensions + 1 - Math.Sqrt(dimensions + 1)) / ((dimensions + 1) * dimensions);
-
-            double s = dimensionValues.Sum() * F;
-            int[] floors = new int[dimensions];
-            double[] bases = new double[dimensions];
+            int[] ivvals = new int[dimensions];
+            double[] xvals = new double[dimensions];
 
             double t = 0;
             for (int i = 0; i < dimensions; i++)
             {
-                int j = (int)Math.Floor(dimensionValues[i] + s);
-                t += j;
-                floors[i] = j;
+                ivvals[i] = (int)(vals[i] + s);
+                t += ivvals[i];
             }
             t *= G;
 
             for (int i = 0; i < dimensions; i++)
+                xvals[i] = vals[i] - (ivvals[i] - t);
+
+            double[] ranks = new double[dimensions];
+
+            double n = 0;
+
+            int temp = dimensions - 1;
+            for (int i = 0; i < dimensions + 1; i++)
             {
-                bases[i] = dimensionValues[i] - (floors[i] - t);
+                for (int j = i + 1; j < dimensions; j++)
+                    if (xvals[i] > xvals[j]) ranks[i]++; else ranks[j]++;
 
-                floors[i] = floors[i] & 255;
-            }
-            
-            int c = 0;
-            c += (bases[0] > bases[1]) ? 32 : 0;
-            c += (bases[0] > bases[2]) ? 16 : 0;
-            c += (bases[1] > bases[2]) ? 8 : 0;
+                double[] vvals = new double[dimensions];
+                int[] p = new int[dimensions];
 
-            int[,] vals = new int[dimensions + 1, dimensions];
-
-            vals[1, 0] = simplex[c, 0] >= 2 ? 1 : 0;
-            vals[1, 1] = simplex[c, 1] >= 2 ? 1 : 0;
-            vals[1, 2] = simplex[c, 2] >= 2 ? 1 : 0;
-            // The number 2 in the "simplex" array is at the second largest coordinate.
-            vals[2, 0] = simplex[c, 0] >= 1 ? 1 : 0;
-            vals[2, 1] = simplex[c, 1] >= 1 ? 1 : 0;
-            vals[2, 2] = simplex[c, 2] >= 1 ? 1 : 0;
-
-            vals[dimensions, 0] = 1;
-            vals[dimensions, 1] = 1;
-            vals[dimensions, 2] = 1;
-            
-            for (int i = 0; i <= dimensions; i++)
-            {
-                double[] d = new double[dimensions];
-
-                for(int j = 0; j < dimensions; j++)
-                    d[j] = bases[j] - vals[i, j] + (i * G);
-
-                int gi = Perm[floors[0] + vals[i, 0] + Perm[floors[1] + vals[i, 1] + Perm[floors[2] + vals[i, 2]]]] % 12;
-
-                double tV = dot(0.5, d);
-
-                if (tV < 0) nth[i] = 0.0;
-                else
+                for (int j = 0; j < dimensions; j++)
                 {
-                    tV *= tV;
-                    nth[i] = tV * tV * dot(grad3[gi], d);
+                    int ival = i == dimensions ? 1 : (ranks[j] >= temp ? 1 : 0);
+                    vvals[j] = i == 0 ? xvals[j] : xvals[j] - ival + i * G;
+                    p[j] = ivvals[j] + ival;
+                }
+
+                if(i > 0) temp--;
+
+                t = 0.6;
+                foreach (double x in vvals)
+                    t -= x * x;
+
+                if (t >= 0)
+                {
+                    t *= t;
+                    n += t * t * GradCoord3D(p, vvals);
                 }
             }
 
-            return 80.0 * nth.Sum();
+            return 32.0 * n;
         }
 
-        private async Task<double[,]> NoiseMap4D(int iterations, int width, int height, int layer, int d4)
+        public double NoiseTest(params double[] vals)
         {
-            Task[] tasks = new Task[height];
+            int dimensions = vals.Length;
+            double G = GValues(dimensions);
 
-            var buffer = new double[height, width];
+            double s = 0;
+            foreach (double v in vals)
+                s += v;
+            s *= FValues(dimensions);
 
-            for (int y = 0; y < height; y++)
+            int[] ivvals = new int[dimensions];
+
+            double t = 0;
+            for (int i = 0; i < dimensions; i++)
             {
-                int yCopy = y;
-                tasks[y] = Task.Factory.StartNew(() =>
+                ivvals[i] = (int)(vals[i] + s);
+                t += ivvals[i];
+            }
+            t *= G;
+
+            double[] xvals = new double[dimensions];
+            double[] ranks = new double[dimensions];
+
+            for (int i = dimensions - 1; i >= 0; i--)
+            {
+                xvals[i] = vals[i] - (ivvals[i] - t);
+                for (int j = i + 1; j < dimensions; j++)
+                    if (xvals[i] > xvals[j]) ranks[i]++; else ranks[j]++;
+            }
+
+            double n = 0;
+            int temp = dimensions - 1;
+
+            for (int i = 0; i < dimensions + 1; i++)
+            {
+                double[] vvals = new double[dimensions];
+                int[] p = new int[dimensions];
+
+                t = 0.6;
+
+                for (int j = 0; j < dimensions; j++)
                 {
-                    for (int x = 0; x < width; x++)
-                    {
-                        buffer[yCopy, x] = Octave4D(iterations, x, yCopy, layer, d4);
-                    }
-                });
+                    int ival = 0;
+                    if (i > 0) ival = (i == dimensions ? 1 : (ranks[j] >= temp ? 1 : 0));
+                    vvals[j] = i == 0 ? xvals[j] : xvals[j] - ival + i * G;
+
+                    t -= vvals[j] * vvals[j];
+
+                    p[j] = ivvals[j] + ival;
+                }
+                if (i > 0) temp--;
+
+                if (t >= 0)
+                {
+                    n += (t * t) * t * t * GradCoord3D(p, vvals);
+                }
             }
 
-            await Task.WhenAll(tasks);
-
-            return buffer;
-        }
-
-        private double Octave4D(int iterations, double xin, double yin, double zin, double win)
-        {
-            double maxAmp = 0;
-            double amp = 1;
-            double freq = Scale;
-            double noise = 0;
-
-            for (int i = 0; i < iterations; ++i)
-            {
-                noise += Noise4D(xin * freq, yin * freq, zin * freq, win * freq) * amp;
-                maxAmp += amp;
-                amp *= Persistence;
-                freq *= 2;
-            }
-
-            noise /= maxAmp;
-
-            return noise;
+            return 32.0 * n;
         }
 
         private double Noise4D(double xin, double yin, double zin, double win)
@@ -734,39 +516,32 @@ namespace CPWS.WorldGenerator.Noise
             return 32.0 * (n0 + n1 + n2 + n3 + n4);
         }
 
-        // This is an attempt to make an nth dimensional Noise function, where N is any number of dimensions.
-        // Essentially a Noise function that can handle any number of dimensions.
-        private double NoiseND(double[] dimensionValues)
+        private static readonly int[] primeList = new int[] { 1619, 31337, 6971, 1013 };
+        public double GradCoord3D(int[] ints, double[] doubles)
         {
-            int dimensions = dimensionValues.Length;
-            double[] nth = new double[dimensions];
+            int dimensions = ints.Length;
+            uint hash = Seed;
 
-            double F = (Math.Sqrt(dimensions + 1) - 1.0) / dimensions;
-            double G = (dimensions + 1 - Math.Sqrt(dimensions + 1)) / ((dimensions + 1) * dimensions);
-
-            double s = dimensionValues.Sum() * F;
-
-            double[] floors = new double[dimensions];
-
-            double t = 0;
-            for (int i = 0; i < dimensions; i++)
+            for (int i = 0; i < ints.Length; i++)
             {
-                int j = (int)Math.Floor(dimensionValues[i] + s);
-                t += j;
-                floors[i] = j;
-            }
-            t *= G;
-
-            double[,] vals = new double[dimensions+1, dimensions];
-            double[,] simple = new double[dimensions-1, dimensions];
-            for (int i = 0; i < dimensions; i++)
-            {
-                vals[0, i] = dimensionValues[i] - (floors[i] - t);
+                hash ^= (uint)(primeList[i % 4] * ints[i]);
             }
 
+            hash = hash * hash * hash * 60493;
+            hash = (hash >> 13) ^ hash;
 
+            hash &= 15;
 
-            return nth.Sum();// * valueThatIdkYet;
+            double result = 0.0;
+            int current = 1;
+
+            for (int i = dimensions - 1; i > -1; i--)
+            {
+                result += (hash & current) == 0 ? -doubles[i] : doubles[i];
+                current *= 2;
+            }
+
+            return result;
         }
 
         private static double dot(int[] gradient, params double[] values)

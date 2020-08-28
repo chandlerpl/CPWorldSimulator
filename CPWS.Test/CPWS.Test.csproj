@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CPWS.EcoSystem\CPWS.EcoSystem.csproj" />
+    <ProjectReference Include="..\CPWS.WorldGenerator\CPWS.WorldGenerator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CP.Common">
+      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.1\CP.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

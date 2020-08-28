@@ -20,9 +20,10 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure
 
         public VoronoiEdge Neighbor { get; internal set; }
 
-        internal VoronoiEdge(Point start, FSite left, FSite right)
+        public VoronoiEdge(Point start, FSite left, FSite right, Point end = null)
         {
             StartPoint = start;
+            EndPoint = end;
             Left = left;
             Right = right;
 

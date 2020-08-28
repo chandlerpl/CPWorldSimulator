@@ -2,9 +2,9 @@
 #ifndef __GPU_TIMER_H__
 #define __GPU_TIMER_H__
 
-namespace CPWS
+namespace CP
 {
-    namespace CUDA
+    namespace CommonCUDA
     {
         struct GpuTimer
         {

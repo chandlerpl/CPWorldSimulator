@@ -21,7 +21,6 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure
         private List<Point> _points;
 
         public List<Point> Points
-
         {
             get
             {
