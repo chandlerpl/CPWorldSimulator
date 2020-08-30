@@ -5,14 +5,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimplexNoiseCUDA.cpp" />
-    <ClCompile Include="SimplexNoise.cpp" />
+    <ClCompile Include="SimplexNoise.cpp">
+      <Filter>Noise</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SimplexNoiseCUDA.h" />
     <ClInclude Include="NoiseGen.h">
       <Filter>Noise</Filter>
     </ClInclude>
-    <ClInclude Include="SimplexNoise.h" />
+    <ClInclude Include="SimplexNoise.h">
+      <Filter>Noise</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Noise">
