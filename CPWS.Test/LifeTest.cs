@@ -27,6 +27,8 @@ namespace CPWS.Test
         {
             int people = args.Count > 1 ? int.Parse(args[1]) : 10;
 
+            CoreLife cl = new AnimalLife();
+
             return true;
         }
     }

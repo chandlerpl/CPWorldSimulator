@@ -1,4 +1,4 @@
-#include "../CPWS.CUDACLI/SimplexNoiseCUDA.h"
+/*#include "../CPWS.CUDACLI/SimplexNoiseCUDA.h"
 using namespace std;
 
 extern "C" double* Noise3DCuda(short* source, int x, int y, int z, double scale, double persistence, int iterations, int gpuid);
@@ -30,4 +30,4 @@ array<double, 2>^ CPWS::CUDA::Noise::SimplexNoiseCUDA::NoiseMap(array<short>^ So
     delete[] UnmanagedSource;
 
     return result;
-}
+}*/

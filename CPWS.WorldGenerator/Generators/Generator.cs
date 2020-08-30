@@ -27,13 +27,13 @@ namespace CPWS.WorldGenerator.Generators
             switch(noiseType)
             {
                 case NoiseType.SIMPLEX:
-                    noiseGen = new SimplexNoise(seed, 0.05, 0.5);
+                    noiseGen = new SimplexNoise2(seed, 0.05, 0.5, false);
                     break;
                 case NoiseType.PERLIN:
-                    noiseGen = new PerlinNoise(seed) { Persistence = 0.5, Scale = 0.05 };
+                    //noiseGen = new PerlinNoise(seed);
                     break;
                 case NoiseType.CUSTOM:
-                    noiseGen = new CustomNoise(seed) { Persistence = 0.5, Scale = 0.05 };
+                    //noiseGen = new CustomNoise(seed);
                     break;
             }
 

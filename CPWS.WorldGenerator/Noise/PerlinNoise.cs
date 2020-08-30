@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,7 +7,7 @@ namespace CPWS.WorldGenerator.Noise
 {
     class PerlinNoise : NoiseGen
     {
-        public PerlinNoise(uint seed) : base(seed)
+        public PerlinNoise(uint seed) : base(seed, 0, 0, false)
         {
             throw new NotImplementedException("Perlin Noise function not yet implemented.");
         }
@@ -17,7 +17,7 @@ namespace CPWS.WorldGenerator.Noise
             throw new NotImplementedException();
         }
 
-        public override Task<double[,]> NoiseMap(int iterations, params int[] vals)
+        public override double[,] NoiseMap(int iterations, params int[] vals)
         {
             throw new NotImplementedException();
         }
@@ -33,3 +33,4 @@ namespace CPWS.WorldGenerator.Noise
         }
     }
 }
+*/

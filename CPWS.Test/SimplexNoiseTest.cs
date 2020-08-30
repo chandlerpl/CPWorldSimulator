@@ -34,7 +34,7 @@ namespace CPWS.Test
                     dims[j++] = int.Parse(args[i]);
 
             runTest(samples, perms, dims);
-            
+
             return true;
         }
 
@@ -45,17 +45,6 @@ namespace CPWS.Test
             Stopwatch watch = new Stopwatch();
             Random rand = new Random();
 
-            for (int s = 0; s < samples; s++)
-            {
-                SimplexNoise2 noise = new SimplexNoise2((uint)rand.Next(0, 999999999), 0.005, 0.5, false);
-                watch.Restart();
-                Task t = noise.NoiseMap(permutations, dims);
-
-                await Task.WhenAll(t);
-                watch.Stop();
-                times[s] = watch.Elapsed.TotalMilliseconds;
-            }
-
             Console.WriteLine("Processor:" + Environment.ProcessorCount);
             ThreadPool.GetMinThreads(out int minThread, out int comp);
             Console.WriteLine("MinThread:" + minThread);
@@ -65,8 +54,30 @@ namespace CPWS.Test
 
             var res = (dims[0] + "x" + dims[1]);
 
-            Console.WriteLine(res + ": avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max());
+            for (int s = 0; s < samples; s++)
+            {
 
+                SimplexNoise2 noise = new SimplexNoise2((uint)rand.Next(0, 999999999), 0.005, 0.5, false);
+                watch.Restart();
+                Task t = noise.NoiseMap(permutations, dims);
+
+                Task.WaitAll(t);
+                watch.Stop();
+                times[s] = watch.Elapsed.TotalMilliseconds;
+            }
+            Console.WriteLine(res + ": avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max());
+            
+            for (int s = 0; s < samples; s++)
+            {
+                
+                CPWS.WorldGenerator.Test.Noise.SimplexNoise noise = new WorldGenerator.Test.Noise.SimplexNoise((uint)rand.Next(0, 999999999), 0.5, 0.005, false);
+                watch.Restart();
+                _ = noise.NoiseMapNotAsync(permutations, dims);
+                watch.Stop();
+                times[s] = watch.Elapsed.TotalMilliseconds;
+            }
+            Console.WriteLine(res + " 2: avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max());
+           
             Console.WriteLine("Finished!");
         }
     }

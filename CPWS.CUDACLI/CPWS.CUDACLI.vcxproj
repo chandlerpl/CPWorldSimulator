@@ -15,13 +15,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="NoiseGen.h" />
+    <ClInclude Include="SimplexNoise.h" />
     <ClInclude Include="SimplexNoiseCUDA.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="SimplexNoise.cpp" />
     <ClCompile Include="SimplexNoiseCUDA.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="CP.CommonCUDA">
+      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.1\CP.CommonCUDA.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{22C7518D-DAA3-4999-87C4-AC036F3E3973}</ProjectGuid>
@@ -79,8 +87,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -98,6 +109,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

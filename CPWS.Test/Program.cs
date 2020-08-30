@@ -1,4 +1,5 @@
 ﻿using CP.Common.Commands;
+using CPWS.WorldGenerator.Noise;
 using System;
 
 namespace CPWS.Test

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CP.Common.Utilities;
-using CPWS.CUDA.Noise;
 
 namespace CPWS.WorldGenerator.Noise
 {
@@ -66,7 +65,7 @@ namespace CPWS.WorldGenerator.Noise
 
         public SimplexNoise(uint seed, double scale, double persistence, bool useCuda = true) : base(seed)
         {
-            UseCuda = useCuda;
+            //UseCuda = useCuda;
 
             Scale = scale;
             Persistence = persistence;
@@ -282,125 +281,89 @@ namespace CPWS.WorldGenerator.Noise
             return 30.0 * (n0 + n1 + n2);
         }
 
-        private double Noise3D(params double[] vals)
+        private double Noise3D(double xin, double yin, double zin)
         {
-            int dimensions = vals.Length;
-            double G = GValues(dimensions);
+            double n0, n1, n2, n3;
+            
+            double G = GValues(3);
+            double s = (xin + yin + zin) * FValues(3);
+            int i = (int)Math.Floor(xin + s);
+            int j = (int)Math.Floor(yin + s);
+            int k = (int)Math.Floor(zin + s);
+            double t = (i + j + k) * G;
+            double X0 = i - t;
+            double Y0 = j - t;
+            double Z0 = k - t;
+            double x0 = xin - X0;
+            double y0 = yin - Y0;
+            double z0 = zin - Z0;
+            
 
-            double s = 0;
-            foreach (double v in vals)
-                s += v;
-            s *= FValues(dimensions);
-
-            int[] ivvals = new int[dimensions];
-            double[] xvals = new double[dimensions];
-
-            double t = 0;
-            for (int i = 0; i < dimensions; i++)
+            int i1, j1, k1;
+            int i2, j2, k2;
+            if (x0 >= y0)
             {
-                ivvals[i] = (int)(vals[i] + s);
-                t += ivvals[i];
+                if (y0 >= z0)
+                { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0; }
+                else if (x0 >= z0) { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1; }
+                else { i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1; }
             }
-            t *= G;
-
-            for (int i = 0; i < dimensions; i++)
-                xvals[i] = vals[i] - (ivvals[i] - t);
-
-            double[] ranks = new double[dimensions];
-
-            double n = 0;
-
-            int temp = dimensions - 1;
-            for (int i = 0; i < dimensions + 1; i++)
-            {
-                for (int j = i + 1; j < dimensions; j++)
-                    if (xvals[i] > xvals[j]) ranks[i]++; else ranks[j]++;
-
-                double[] vvals = new double[dimensions];
-                int[] p = new int[dimensions];
-
-                for (int j = 0; j < dimensions; j++)
-                {
-                    int ival = i == dimensions ? 1 : (ranks[j] >= temp ? 1 : 0);
-                    vvals[j] = i == 0 ? xvals[j] : xvals[j] - ival + i * G;
-                    p[j] = ivvals[j] + ival;
-                }
-
-                if(i > 0) temp--;
-
-                t = 0.6;
-                foreach (double x in vvals)
-                    t -= x * x;
-
-                if (t >= 0)
-                {
-                    t *= t;
-                    n += t * t * GradCoord3D(p, vvals);
-                }
+            else
+            { // x0<y0
+                if (y0 < z0) { i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1; }
+                else if (x0 < z0) { i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1; }
+                else { i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0; }
             }
 
-            return 32.0 * n;
-        }
+            double x1 = x0 - i1 + G;
+            double y1 = y0 - j1 + G;
+            double z1 = z0 - k1 + G;
+            double x2 = x0 - i2 + 2.0 * G;
+            double y2 = y0 - j2 + 2.0 * G;
+            double z2 = z0 - k2 + 2.0 * G;
+            double x3 = x0 - 1.0 + 3.0 * G;
+            double y3 = y0 - 1.0 + 3.0 * G;
+            double z3 = z0 - 1.0 + 3.0 * G;
+            
+            int ii = i & 255;
+            int jj = j & 255;
+            int kk = k & 255;
 
-        public double NoiseTest(params double[] vals)
-        {
-            int dimensions = vals.Length;
-            double G = GValues(dimensions);
+            int gi0 = (Perm[ii + Perm[jj + Perm[kk]]] % 12);
+            int gi1 = (Perm[ii + i1 + Perm[jj + j1 + Perm[kk + k1]]] % 12);
+            int gi2 = (Perm[ii + i2 + Perm[jj + j2 + Perm[kk + k2]]] % 12);
+            int gi3 = (Perm[ii + 1 + Perm[jj + 1 + Perm[kk + 1]]] % 12);
 
-            double s = 0;
-            foreach (double v in vals)
-                s += v;
-            s *= FValues(dimensions);
-
-            int[] ivvals = new int[dimensions];
-
-            double t = 0;
-            for (int i = 0; i < dimensions; i++)
+            double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+            if (t0 < 0) n0 = 0.0;
+            else
             {
-                ivvals[i] = (int)(vals[i] + s);
-                t += ivvals[i];
+                t0 *= t0;
+                n0 = t0 * t0 * dot(grad3[gi0], new double[3] { x0, y0, z0 });
             }
-            t *= G;
-
-            double[] xvals = new double[dimensions];
-            double[] ranks = new double[dimensions];
-
-            for (int i = dimensions - 1; i >= 0; i--)
+            double t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+            if (t1 < 0) n1 = 0.0;
+            else
             {
-                xvals[i] = vals[i] - (ivvals[i] - t);
-                for (int j = i + 1; j < dimensions; j++)
-                    if (xvals[i] > xvals[j]) ranks[i]++; else ranks[j]++;
+                t1 *= t1;
+                n1 = t1 * t1 * dot(grad3[gi1], new double[3] { x1, y1, z1 });
             }
-
-            double n = 0;
-            int temp = dimensions - 1;
-
-            for (int i = 0; i < dimensions + 1; i++)
+            double t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+            if (t2 < 0) n2 = 0.0;
+            else
             {
-                double[] vvals = new double[dimensions];
-                int[] p = new int[dimensions];
-
-                t = 0.6;
-
-                for (int j = 0; j < dimensions; j++)
-                {
-                    int ival = 0;
-                    if (i > 0) ival = (i == dimensions ? 1 : (ranks[j] >= temp ? 1 : 0));
-                    vvals[j] = i == 0 ? xvals[j] : xvals[j] - ival + i * G;
-
-                    t -= vvals[j] * vvals[j];
-
-                    p[j] = ivvals[j] + ival;
-                }
-                if (i > 0) temp--;
-
-                if (t >= 0)
-                {
-                    n += (t * t) * t * t * GradCoord3D(p, vvals);
-                }
+                t2 *= t2;
+                n2 = t2 * t2 * dot(grad3[gi2], new double[3] { x2, y2, z2 });
             }
-
-            return 32.0 * n;
+            double t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+            if (t3 < 0) n3 = 0.0;
+            else
+            {
+                t3 *= t3;
+                n3 = t3 * t3 * dot(grad3[gi3], new double[3] { x3, y3, z3 });
+            }
+            
+            return 32.0 * (n0 + n1 + n2 + n3);
         }
 
         private double Noise4D(double xin, double yin, double zin, double win)

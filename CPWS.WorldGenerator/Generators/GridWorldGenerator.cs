@@ -21,10 +21,10 @@ namespace CPWS.WorldGenerator.Generators
         public override async void Generate()
         {
             List<Point> sites = voronoiGen.Sites.ConvertAll(a => { return new Point(a.X, a.Y); });
-            double[,] heightMap = await noiseGen.NoiseMap(4, Data.X, Data.Y);
-            Data.SetHeightData(heightMap);
+            //double[,] heightMap = await noiseGen.NoiseMap(4, Data.X, Data.Y);
+            //Data.SetHeightData(heightMap);
 
-            Data.SetTemperatureData(await Heatmap.GenerateHeatmap(noiseGen, Data.Y, Data.X, heightMap));
+            //Data.SetTemperatureData(await Heatmap.GenerateHeatmap(noiseGen, Data.Y, Data.X, heightMap));
 
             
         }

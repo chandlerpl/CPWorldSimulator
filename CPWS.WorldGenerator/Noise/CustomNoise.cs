@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +9,9 @@ namespace CPWS.WorldGenerator.Noise
 {
     public class CustomNoise : NoiseGen
     {
-        public CustomNoise(uint seed) : base(seed)
+        public CustomNoise(uint seed) : base(seed, 0, 0, false)
         {
-            hash = new RandomHash(Seed);
+            hash = new RandomHash(seed);
         }
 
         RandomHash hash;
@@ -65,7 +65,7 @@ namespace CPWS.WorldGenerator.Noise
         {
             double maxAmp = 0;
             double amp = 1;
-            double freq = Scale;
+            double freq = scale;
             double noise = 0;// Noise(vals.Select(r => r * freq).ToArray()) * amp;
             
 
@@ -74,7 +74,7 @@ namespace CPWS.WorldGenerator.Noise
                 noise += Noise(vals.Select(r => r * freq).ToArray()) * amp;
                 //noise += simplex.Noise(vals[0], vals.Length > 1 ? vals[1] : 0);
                 maxAmp += amp;
-                amp *= Persistence;
+                amp *= persistence;
                 freq *= 2;
             }
 
@@ -83,7 +83,7 @@ namespace CPWS.WorldGenerator.Noise
             return noise;
         }
 
-        public override Task<double[,]> NoiseMap(int iterations, params int[] vals)
+        public override double[,] NoiseMap(int iterations, params int[] vals)
         {
             throw new NotImplementedException();
         }
@@ -96,7 +96,7 @@ namespace CPWS.WorldGenerator.Noise
             {
                 for (int x = 0; x < vals[0]; x++)
                 {
-                    buffer[0, x] = Octave(iterations, x);
+                    //buffer[0, x] = Octave(iterations, x);
                 }
             } else
             {
@@ -136,3 +136,4 @@ namespace CPWS.WorldGenerator.Noise
         }
     }
 }
+*/

@@ -1,4 +1,5 @@
 ﻿using CP.Common.Utilities;
+using CPWS.WorldGenerator.Test.Noise;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,6 +17,9 @@ namespace CPWS.EcoSystem.Life
         {
             Name = name;
             INSTANCES.Add(this);
+
+            SimplexNoise noise = new SimplexNoise(46313, 0.5, 0.5, false);
+            Console.WriteLine(noise.Noise(new double[3] { 1920, 1080, 0 }));
         }
 
         public abstract void Progress();

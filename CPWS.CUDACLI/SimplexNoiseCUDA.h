@@ -2,18 +2,22 @@
 
 namespace CPWS
 {
-    namespace CUDA
+    namespace WorldGenerator 
     {
-        namespace Noise
+        namespace CUDA
         {
-            public ref class SimplexNoiseCUDA abstract sealed
+            namespace Noise
             {
-            public:
-                static array<double, 2>^ NoiseMap(array<short>^ Source, double Scale, double Persistence, int iterations, double d1, double d2, double d3);
-                static array<double, 2>^ NoiseMap(array<short>^ Source, double Scale, double Persistence, int iterations, double d1, double d2, double d3, int gpuid);
-            private:
+                public ref class SimplexNoiseCUDA abstract sealed
+                {
+                public:
+                    static array<double, 2>^ NoiseMap(array<short>^ Source, double Scale, double Persistence, int iterations, double d1, double d2, double d3);
+                    static array<double, 2>^ NoiseMap(array<short>^ Source, double Scale, double Persistence, int iterations, double d1, double d2, double d3, int gpuid);
+                private:
 
-            };
+                };
+            }
         }
+
     }
 }

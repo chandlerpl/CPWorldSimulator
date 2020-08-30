@@ -4,8 +4,11 @@ using System.Text;
 
 namespace CPWS.EcoSystem.Life
 {
-    public abstract class AnimalLife : CoreLife
+    public class AnimalLife : CoreLife
     {
-
+        public override void Progress()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

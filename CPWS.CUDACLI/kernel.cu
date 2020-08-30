@@ -4,7 +4,6 @@
 
 #include <cmath>
 #include <stdio.h>
-#include "GpuTimer.h"
 
 using namespace std;
 extern "C" double* Noise3DCuda(short* source, int x, int y, int z, double scale, double persistence, int iterations, int gpuid);

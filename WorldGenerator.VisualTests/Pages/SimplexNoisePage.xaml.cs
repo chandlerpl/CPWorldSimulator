@@ -41,13 +41,11 @@ namespace WorldGenerator.VisualTests.Pages
 
         private async Task Generate()
         {
-            SimplexNoise2 noise = new SimplexNoise2((uint)items.Find(r => r.Name == "Seed").Value, (double)items.Find(r => r.Name == "Scale").Value, (double)items.Find(r => r.Name == "Persistance").Value, false);
+            CPWS.WorldGenerator.Test.Noise.SimplexNoise noise = new CPWS.WorldGenerator.Test.Noise.SimplexNoise((uint)items.Find(r => r.Name == "Seed").Value, (double)items.Find(r => r.Name == "Scale").Value, (double)items.Find(r => r.Name == "Persistance").Value, false);
 
             Bitmap src = new Bitmap((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height);
 
-            Task<double[,]> t = noise.NoiseMap((int)items.Find(r => r.Name == "Octaves").Value, (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0);
-
-            double[,] vals = (await Task.WhenAll(t))[0];
+            double[,] vals = noise.NoiseMapNotAsync((int)items.Find(r => r.Name == "Octaves").Value, new int[3] {(int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0});
 
             for (int y = 0; y < VisualElement.ResultImage.Height; y++)
             {
