@@ -1,4 +1,5 @@
 ﻿using CP.Common.Commands;
+using CPWS.WorldGenerator.CUDA.Noise;
 using CPWS.WorldGenerator.Noise;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CPWS.Test
 {
-    class SimplexNoiseTest : CPCommand
+    class SimplexNoiseTest : Command
     {
         public override bool Init()
         {
@@ -33,52 +34,34 @@ namespace CPWS.Test
                 for (int i = 3; i < args.Count; i++)
                     dims[j++] = int.Parse(args[i]);
 
-            runTest(samples, perms, dims);
+            runTest(samples, perms, dims).GetAwaiter().GetResult();
 
             return true;
         }
 
-        private async void runTest(int samples, int permutations, params int[] dims)
+        private async Task runTest(int samples, int permutations, params int[] dims)
         {
             double[] times = new double[samples];
 
             Stopwatch watch = new Stopwatch();
             Random rand = new Random();
 
-            Console.WriteLine("Processor:" + Environment.ProcessorCount);
-            ThreadPool.GetMinThreads(out int minThread, out int comp);
-            Console.WriteLine("MinThread:" + minThread);
-            ThreadPool.GetMinThreads(out int maxThread, out int comp1);
-            Console.WriteLine("MaxThread:" + maxThread);
+            Console.WriteLine("Cores: " + Environment.ProcessorCount);
             Console.WriteLine("64bit:" + Environment.Is64BitProcess + Environment.NewLine);
 
             var res = (dims[0] + "x" + dims[1]);
 
             for (int s = 0; s < samples; s++)
             {
-
-                SimplexNoise2 noise = new SimplexNoise2((uint)rand.Next(0, 999999999), 0.005, 0.5, false);
+                Console.WriteLine("Test");
+                SimplexNoise noise = new SimplexNoise((uint)rand.Next(0, 999999999), 0.5, 0.005, false);
                 watch.Restart();
-                Task t = noise.NoiseMap(permutations, dims);
-
-                Task.WaitAll(t);
+                _ = await noise.NoiseMap(4, dims);
+                //_ = SimplexNoiseCUDA.NoiseMap(0.5f, 0.005f, 4, 40000, 40000, 0);
                 watch.Stop();
                 times[s] = watch.Elapsed.TotalMilliseconds;
             }
             Console.WriteLine(res + ": avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max());
-            
-            for (int s = 0; s < samples; s++)
-            {
-                
-                CPWS.WorldGenerator.Test.Noise.SimplexNoise noise = new WorldGenerator.Test.Noise.SimplexNoise((uint)rand.Next(0, 999999999), 0.5, 0.005, false);
-                watch.Restart();
-                _ = noise.NoiseMapNotAsync(permutations, dims);
-                watch.Stop();
-                times[s] = watch.Elapsed.TotalMilliseconds;
-            }
-            Console.WriteLine(res + " 2: avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max());
-           
-            Console.WriteLine("Finished!");
         }
     }
 }

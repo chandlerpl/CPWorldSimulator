@@ -6,16 +6,16 @@ namespace CPWS.Test
 {
     class Program
     {
-        static Command CommandSystem;
+        static CommandSystem CommandSystem;
 
         static void Main(string[] args)
         {
-            CommandSystem = new Command();
+            CommandSystem = new CommandSystem();
 
             while (true)
             {
                 Console.Write("Please enter a command: ");
-                CommandSystem.commandInterface(null, Console.ReadLine().Split(' '));
+                CommandSystem.CommandInterface(null, Console.ReadLine().Split(' '));
             }
         }
     }

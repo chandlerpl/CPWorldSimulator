@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +13,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CPWS.WorldGenerator\CPWS.WorldGenerator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CP.Common">
+      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.0\CP.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="CPWS.CUDACLI">
+      <HintPath>..\x64\Release\CPWS.CUDACLI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

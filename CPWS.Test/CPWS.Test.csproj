@@ -3,16 +3,29 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Platforms>AnyCPU;x86</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <WarningLevel>1</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CPWS.CUDACLI\CPWS.CUDACLI.vcxproj" />
     <ProjectReference Include="..\CPWS.EcoSystem\CPWS.EcoSystem.csproj" />
     <ProjectReference Include="..\CPWS.WorldGenerator\CPWS.WorldGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="CP.Common">
-      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.1\CP.Common.dll</HintPath>
+      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.0\CP.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="CPWS.CUDACLI">
+      <HintPath>..\x64\Release\CPWS.CUDACLI.dll</HintPath>
     </Reference>
   </ItemGroup>
 

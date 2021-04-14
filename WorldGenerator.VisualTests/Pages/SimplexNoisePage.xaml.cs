@@ -1,4 +1,6 @@
-﻿using CPWS.WorldGenerator.Noise;
+﻿using CP.Common.Utilities;
+using CPWS.WorldGenerator.CUDA.Noise;
+using CPWS.WorldGenerator.Noise;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -41,17 +43,19 @@ namespace WorldGenerator.VisualTests.Pages
 
         private async Task Generate()
         {
-            CPWS.WorldGenerator.Test.Noise.SimplexNoise noise = new CPWS.WorldGenerator.Test.Noise.SimplexNoise((uint)items.Find(r => r.Name == "Seed").Value, (double)items.Find(r => r.Name == "Scale").Value, (double)items.Find(r => r.Name == "Persistance").Value, false);
+            SimplexNoise noise = new SimplexNoise((uint)items.Find(r => r.Name == "Seed").Value, (double)items.Find(r => r.Name == "Scale").Value, (double)items.Find(r => r.Name == "Persistance").Value, false);
 
             Bitmap src = new Bitmap((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height);
-
-            double[,] vals = noise.NoiseMapNotAsync((int)items.Find(r => r.Name == "Octaves").Value, new int[3] {(int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0});
+            
+            float[,] vals = SimplexNoiseCUDA.NoiseMap(0.005f, 0.5f, (int)items.Find(r => r.Name == "Octaves").Value, (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0);
 
             for (int y = 0; y < VisualElement.ResultImage.Height; y++)
             {
                 for (int x = 0; x < VisualElement.ResultImage.Width; x++)
                 {
                     int val = (int)((vals[y, x] + 1) * 127.5);
+                    if (val > 255) val = 225;
+                    else if (val < 0) val = 0;
                     src.SetPixel(x, y, System.Drawing.Color.FromArgb(val, val, val));
                 }
             }

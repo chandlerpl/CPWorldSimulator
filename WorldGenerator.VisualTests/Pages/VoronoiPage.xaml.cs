@@ -76,9 +76,9 @@ namespace WorldGenerator.VisualTests.Pages
                 SolidBrush brush = new SolidBrush(System.Drawing.Color.FromArgb(rand.Next(10, 255), rand.Next(10, 255), rand.Next(10, 255)));
                 for (int i = 0; i < sites.Points.Count; i++)
                 {
-                    if (sites.Points[i] is NoisyPoint)
+                    if (sites.Points[i] is NoisyPoint point)
                     {
-                        po[i] = new PointF((float)(sites.Points[i].X + ((NoisyPoint)sites.Points[i]).XNoise), (float)(sites.Points[i].Y + ((NoisyPoint)sites.Points[i]).YNoise));
+                        po[i] = new PointF((float)(sites.Points[i].X + point.XNoise), (float)(sites.Points[i].Y + point.YNoise));
                     }
                     else
                     {

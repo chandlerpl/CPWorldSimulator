@@ -11,8 +11,8 @@ namespace CPWS
                 public ref class SimplexNoiseCUDA abstract sealed
                 {
                 public:
-                    static array<double, 2>^ NoiseMap(array<short>^ Source, double Scale, double Persistence, int iterations, double d1, double d2, double d3);
-                    static array<double, 2>^ NoiseMap(array<short>^ Source, double Scale, double Persistence, int iterations, double d1, double d2, double d3, int gpuid);
+                    static array<float, 2>^ NoiseMap(float Scale, float Persistence, int iterations, float d1, float d2, float d3);
+                    static array<float, 2>^ NoiseMap(float Scale, float Persistence, int iterations, float d1, float d2, float d3, int gpuid);
                 private:
 
                 };

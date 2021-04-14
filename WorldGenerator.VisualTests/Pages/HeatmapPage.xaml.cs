@@ -42,17 +42,19 @@ namespace WorldGenerator.VisualTests.Pages
 
         private async Task Generate()
         {
-            SimplexNoise2 noise = new SimplexNoise2((uint)items.Find(r => r.Name == "Seed").Value, (double)items.Find(r => r.Name == "Scale").Value, (double)items.Find(r => r.Name == "Persistance").Value);
+            SimplexNoise noise = new SimplexNoise((uint)items.Find(r => r.Name == "Seed").Value, (double)items.Find(r => r.Name == "Scale").Value, (double)items.Find(r => r.Name == "Persistance").Value);
 
             Bitmap src = new Bitmap((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height);
 
-            double[,] t = await Heatmap.GenerateHeatmap(noise, (int)VisualElement.ResultImage.Height, (int)VisualElement.ResultImage.Width, noise.NoiseMapNotAsync((int)items.Find(r => r.Name == "Octaves").Value, new int[2] { (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height }));
+            double[,] t = await Heatmap.GenerateHeatmap(noise, (int)VisualElement.ResultImage.Height, (int)VisualElement.ResultImage.Width, await noise.NoiseMap((int)items.Find(r => r.Name == "Octaves").Value, new int[2] { (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height }));
 
             for (int y = 0; y < VisualElement.ResultImage.Height; y++)
             {
                 for (int x = 0; x < VisualElement.ResultImage.Width; x++)
                 {
                     int val = (int)((t[y, x] + 1) * 127.5);
+                    if (val > 255) val = 225;
+                    else if (val < 0) val = 0;
                     src.SetPixel(x, y, System.Drawing.Color.FromArgb(val, val, val));
                 }
             }

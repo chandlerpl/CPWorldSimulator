@@ -3,12 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Configurations>Debug;Release;Release - NoGPU</Configurations>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Life\Animals\" />
-    <Folder Include="Life\Plants\" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CPWS.CUDACLI\CPWS.CUDACLI.vcxproj" />

@@ -1,21 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug;Release;Release - NoGPU</Configurations>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>C:\Users\cpope\Desktop\CP Repos\</OutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CPWS.CUDACLI\CPWS.CUDACLI.vcxproj" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <OutputPath>C:\Users\cpope\Desktop\CP Repos\</OutputPath>
+  </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="CP.Common">
-      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.1\CP.Common.dll</HintPath>
+      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.0\CP.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -39,9 +39,9 @@ namespace CPWS.WorldGenerator.Noise
             Seed = seed;
         }
 
-        public abstract double Noise(params double[] vals);
+        public abstract double Noise(int dimensions, params double[] vals);
 
-        public abstract double Octave(int iterations, params double[] vals);
+        public abstract double Octave(int iterations, int dimensions, params double[] vals);
 
         public abstract Task<double[,]> NoiseMap(int iterations, params int[] vals);
 

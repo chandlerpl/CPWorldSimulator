@@ -143,9 +143,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
         private void GenerateNoisyEdges(int noisyEdgesNo)
         {
-            //SimplexNoise noise = new SimplexNoise((uint)seed, 0.05, 0.5);
+            SimplexNoise noise = new SimplexNoise((uint)seed, 0.05, 0.5);
 
-            //double[,] noiseVals = noise.NoiseMapNotAsync(4, noisyEdgesNo * Edges.Count);
+            double[,] noiseVals = noise.NoiseMapNotAsync(4, noisyEdgesNo * Edges.Count);
             int noiseVal = 0;
 
             double offset = 1d / (noisyEdgesNo + 2);
@@ -156,7 +156,6 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
                 Point startend = (edge.StartPoint + edge.EndPoint) * .5;
                 double angle = Math.Atan2(edge.EndPoint.Y - edge.StartPoint.Y, edge.EndPoint.X - edge.StartPoint.X) / Math.PI;
-                Console.WriteLine(angle);
 
                 for (int i = 0; i < edge.NoisyEdges.Length; i++)
                 {
@@ -164,8 +163,8 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
                     NoisyPoint np = new NoisyPoint(p.X, p.Y)
                     {
-                        //XNoise = (noiseVals[0, noiseVal] * 10) * angle,
-                        //YNoise = (noiseVals[0, noiseVal] * 10) * angle
+                        XNoise = (noiseVals[0, noiseVal] * 10) * angle,
+                        YNoise = (noiseVals[0, noiseVal] * 10) * angle
                     };
 
                     edge.NoisyEdges[i] = np;

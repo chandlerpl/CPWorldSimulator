@@ -17,13 +17,12 @@ namespace CPWS.WorldGenerator.Maps
             {
                 double gradient = GenerateGradient((double)y / yin);
                 int yCopy = y;
-                Console.WriteLine("1");
 
                 tasks[y] = Task.Factory.StartNew(() =>
                 {
                     for (int x = 0; x < xin; x++)
                     {
-                        //heatmap[yCopy, x] = Lerp(noise.Octave(4, x, yCopy), gradient, .9225) * (heightMap != null ? 1 - ((heightMap[yCopy, x] + 1) / 2) : 1);
+                        heatmap[yCopy, x] = Lerp(noise.Octave(4, 2, x, yCopy), gradient, .85) * (heightMap != null ? 1 - ((heightMap[yCopy, x] + 1) / 2) : 1);
                     }
                 });
             }
