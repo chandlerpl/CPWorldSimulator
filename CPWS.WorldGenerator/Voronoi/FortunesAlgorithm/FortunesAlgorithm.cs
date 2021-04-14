@@ -23,8 +23,8 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
         public int Seed { get => seed; set { seed = value; rand = value == 0 ? new Random() : new Random(seed); } }
         public int PointCount { get; set; }
 
-        private double minX = 0;
-        private double minY = 0;
+        private double minX;
+        private double minY;
         private double maxX = 1920;
         private double maxY = 1080;
 
@@ -34,8 +34,8 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
         public double MaxX { get => maxX; set { maxX = value; } }
         public double MaxY { get => maxY; set {  maxY = value; } }
 
-        public bool UseDelaunay { get; set; } = false;
-        public bool UseNoisyEdges { get; set; } = false;
+        public bool UseDelaunay { get; set; }
+        public bool UseNoisyEdges { get; set; }
         public int NoisyEdgesNo { get; set; } = 9;
 
         public FortunesAlgorithm(int seed = 0, int pointCount = 250, double minX = 0, double minY = 0, double maxX = 1920, double maxY = 1080, bool useDelaunay = false, int noisyEdges = 0)
@@ -72,7 +72,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             }
 
             if (UseNoisyEdges)
+            {
                 GenerateNoisyEdges(NoisyEdgesNo);
+            }
         }
 
         private List<FSite> GeneratePoints()
@@ -82,8 +84,8 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             for (var i = 0; i < PointCount; i++)
             {
                 sites.Add(new FSite(
-                    rand.Next((int)(0), (int)maxX),
-                    rand.Next((int)(0), (int)maxY)));
+                    rand.Next(0, (int)maxX),
+                    rand.Next(0, (int)maxY)));
             }
 
             //uniq the points
@@ -92,13 +94,19 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
                 if (p1.X.ApproxEqual(p2.X))
                 {
                     if (p1.Y.ApproxEqual(p2.Y))
+                    {
                         return 0;
+                    }
                     if (p1.Y < p2.Y)
+                    {
                         return -1;
+                    }
                     return 1;
                 }
                 if (p1.X < p2.X)
+                {
                     return -1;
+                }
                 return 1;
             });
 
@@ -108,8 +116,7 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             for (var index = 1; index < sites.Count; index++)
             {
                 var point = sites[index];
-                if (!last.X.ApproxEqual(point.X) ||
-                    !last.Y.ApproxEqual(point.Y))
+                if (!last.X.ApproxEqual(point.X) || !last.Y.ApproxEqual(point.Y))
                 {
                     unique.Add(point);
                     last = point;
@@ -154,7 +161,6 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             {
                 edge.NoisyEdges = new NoisyPoint[noisyEdgesNo];
 
-                Point startend = (edge.StartPoint + edge.EndPoint) * .5;
                 double angle = Math.Atan2(edge.EndPoint.Y - edge.StartPoint.Y, edge.EndPoint.X - edge.StartPoint.X) / Math.PI;
 
                 for (int i = 0; i < edge.NoisyEdges.Length; i++)
@@ -190,7 +196,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             {
                 var fEvent = eventQueue.Pop();
                 if (fEvent is FortuneSiteEvent)
+                {
                     beachLine.AddBeachSection((FortuneSiteEvent)fEvent, eventQueue, deleted, edges);
+                }
                 else
                 {
                     if (deleted.Contains((FortuneCircleEvent)fEvent))
@@ -246,17 +254,16 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
                 {
                     bottomRightEdge = edge;
                     BREdgeDistance = Dist;
-                    continue;
                 }
             }
 
             if (topLeftEdge != null)
             {
-                Point end = topLeftEdge.EndPoint;
                 topLeftEdge.EndPoint = topLeft;
                 if (topLeftEdge.Neighbor != null)
+                {
                     topLeftEdge.Neighbor.StartPoint = topLeft;
-                //edges.AddLast(new VoronoiEdge(topLeft, topLeftEdge.Left, topLeftEdge.Right, end));
+                }
             }
             else
             {
@@ -266,11 +273,11 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
             if (topRightEdge != null)
             {
-                Point end = topRightEdge.EndPoint;
                 topRightEdge.EndPoint = topRight;
                 if (topRightEdge.Neighbor != null)
+                {
                     topRightEdge.Neighbor.StartPoint = topRight;
-                //edges.AddLast(new VoronoiEdge(topRight, topRightEdge.Left, topRightEdge.Right, end));
+                }
             }
             else
             {
@@ -279,11 +286,11 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
             if (bottomLeftEdge != null)
             {
-                Point end = bottomLeftEdge.EndPoint;
                 bottomLeftEdge.EndPoint = bottomLeft;
                 if (bottomLeftEdge.Neighbor != null)
+                {
                     bottomLeftEdge.Neighbor.StartPoint = bottomLeft;
-                //edges.AddLast(new VoronoiEdge(bottomLeft, bottomLeftEdge.Left, bottomLeftEdge.Right, end));
+                }
             }
             else
             {
@@ -292,11 +299,11 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
             if (bottomRightEdge != null)
             {
-                Point end = bottomRightEdge.EndPoint;
                 bottomRightEdge.EndPoint = bottomRight;
                 if (bottomRightEdge.Neighbor != null)
+                {
                     bottomRightEdge.Neighbor.StartPoint = bottomRight;
-                //edges.AddLast(new VoronoiEdge(bottomRight, bottomRightEdge.Left, bottomRightEdge.Right, end));
+                }
             }
             else
             {
@@ -312,7 +319,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
                 var valid = ClipEdge(edge, minX, minY, maxX, maxY);
                 if (!valid)
+                {
                     edges.Remove(edgeNode);
+                }
 
                 if(valid)
                 {
@@ -471,19 +480,30 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
         private static int ComputeOutCode(double x, double y, double minX, double minY, double maxX, double maxY)
         {
             int code = 0;
-            if (x.ApproxEqual(minX) || x.ApproxEqual(maxX))
-            { }
-            else if (x < minX)
-                code |= 0x1;
-            else if (x > maxX)
-                code |= 0x2;
+            if (!x.ApproxEqual(minX) && !x.ApproxEqual(maxX))
+            {
+                if (x < minX)
+                {
+                    code |= 0x1;
+                }
+                else if (x > maxX)
+                {
+                    code |= 0x2;
+                }
+            }
 
-            if (y.ApproxEqual(minY) || x.ApproxEqual(maxY))
-            { }
-            else if (y < minY)
-                code |= 0x4;
-            else if (y > maxY)
-                code |= 0x8;
+            if (!y.ApproxEqual(minY) && !x.ApproxEqual(maxY))
+            {
+                if (y < minY)
+                {
+                    code |= 0x4;
+                }
+                else if (y > maxY)
+                {
+                    code |= 0x8;
+                }
+            }
+
             return code;
         }
 
@@ -494,17 +514,27 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             if (edge.SlopeRise.ApproxEqual(0))
             {
                 if (!Within(start.Y, minY, maxY))
+                {
                     return false;
+                }
                 if (edge.SlopeRun > 0 && start.X > maxX)
+                {
                     return false;
+                }
                 if (edge.SlopeRun < 0 && start.X < minX)
+                {
                     return false;
+                }
                 if (Within(start.X, minX, maxX))
                 {
                     if (edge.SlopeRun > 0)
+                    {
                         edge.EndPoint = new Point(maxX, start.Y);
+                    }
                     else
+                    {
                         edge.EndPoint = new Point(minX, start.Y);
+                    }
                 }
                 else
                 {
@@ -525,17 +555,27 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             if (edge.SlopeRun.ApproxEqual(0))
             {
                 if (start.X < minX || start.X > maxX)
+                {
                     return false;
+                }
                 if (edge.SlopeRise > 0 && start.Y > maxY)
+                {
                     return false;
+                }
                 if (edge.SlopeRise < 0 && start.Y < minY)
+                {
                     return false;
+                }
                 if (Within(start.Y, minY, maxY))
                 {
                     if (edge.SlopeRise > 0)
+                    {
                         edge.EndPoint = new Point(start.X, maxY);
+                    }
                     else
+                    {
                         edge.EndPoint = new Point(start.X, minY);
+                    }
                 }
                 else
                 {
@@ -553,9 +593,6 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
                 return true;
             }
 
-            //works for outside
-            //Debug.Assert(edge.Slope != null, "edge.Slope != null");
-            //Debug.Assert(edge.Intercept != null, "edge.Intercept != null");
             var topX = new Point(CalcX(edge.Slope.Value, maxY, edge.Intercept.Value), maxY);
             var bottomX = new Point(CalcX(edge.Slope.Value, minY, edge.Intercept.Value), minY);
             var leftY = new Point(minX, CalcY(edge.Slope.Value, minX, edge.Intercept.Value));
@@ -564,13 +601,21 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
             //reject intersections not within bounds
             var candidates = new List<Point>();
             if (Within(topX.X, minX, maxX))
+            {
                 candidates.Add(topX);
+            }
             if (Within(bottomX.X, minX, maxX))
+            {
                 candidates.Add(bottomX);
+            }
             if (Within(leftY.Y, minY, maxY))
+            {
                 candidates.Add(leftY);
+            }
             if (Within(rightY.Y, minY, maxY))
+            {
                 candidates.Add(rightY);
+            }
 
             //reject candidates which don't align with the slope
             for (var i = candidates.Count - 1; i > -1; i--)
@@ -580,7 +625,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
                 var ax = candidate.X - start.X;
                 var ay = candidate.Y - start.Y;
                 if (edge.SlopeRun * ax + edge.SlopeRise * ay < 0)
+                {
                     candidates.RemoveAt(i);
+                }
             }
 
             //if there are two candidates we are outside the closer one is start
@@ -605,7 +652,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 
             //if there is one candidate we are inside
             if (candidates.Count == 1)
+            {
                 edge.EndPoint = candidates[0];
+            }
 
             //there were no candidates
             return edge.EndPoint != null;

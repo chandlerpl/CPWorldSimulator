@@ -41,7 +41,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
                 successor.Previous = node;
                 successor.Next = node.Next;
                 if (node.Next != null)
+                {
                     node.Next.Previous = successor;
+                }
                 node.Next = successor;
 
                 //insert successor into the tree
@@ -61,7 +63,6 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
                 //if the node is null, successor must be inserted
                 //into the left most part of the tree
                 node = GetFirst(Root);
-                //successor.Previous = null;
                 successor.Next = node;
                 node.Previous = successor;
                 node.Left = successor;
@@ -70,12 +71,10 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             else
             {
                 //first insert
-                //successor.Previous = successor.Next = null;
                 Root = successor;
                 parent = null;
             }
 
-            //successor.Left = successor.Right = null;
             successor.Parent = parent;
             successor.Red = true;
 
@@ -143,12 +142,15 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
         {
             //fix up linked list structure
             if (node.Next != null)
+            {
                 node.Next.Previous = node.Previous;
+            }
             if (node.Previous != null)
+            {
                 node.Previous.Next = node.Next;
+            }
 
             //replace the node
-            var original = node;
             var parent = node.Parent;
             var left = node.Left;
             var right = node.Right;
@@ -166,9 +168,13 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             if (parent != null)
             {
                 if (parent.Left == node)
+                {
                     parent.Left = next;
+                }
                 else
+                {
                     parent.Right = next;
+                }
             }
             else
             {
@@ -234,7 +240,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             do
             {
                 if (node == Root)
+                {
                     break;
+                }
                 if (node == parent.Left)
                 {
                     sibling = parent.Right;
@@ -294,25 +302,35 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             } while (!node.Red);
 
             if (node != null)
+            {
                 node.Red = false;
+            }
 
         }
 
         public static RBTreeNode<T> GetFirst(RBTreeNode<T> node)
         {
             if (node == null)
+            {
                 return null;
+            }
             while (node.Left != null)
+            {
                 node = node.Left;
+            }
             return node;
         }
 
         public static RBTreeNode<T> GetLast(RBTreeNode<T> node)
         {
             if (node == null)
+            {
                 return null;
+            }
             while (node.Right != null)
+            {
                 node = node.Right;
+            }
             return node;
         }
 
@@ -325,9 +343,13 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             if (parent != null)
             {
                 if (parent.Left == p)
+                {
                     parent.Left = q;
+                }
                 else
+                {
                     parent.Right = q;
+                }
             }
             else
                 Root = q;
@@ -335,7 +357,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             p.Parent = q;
             p.Right = q.Left;
             if (p.Right != null)
+            {
                 p.Right.Parent = p;
+            }
             q.Left = p;
         }
 
@@ -347,9 +371,13 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             if (parent != null)
             {
                 if (parent.Left == p)
+                {
                     parent.Left = q;
+                }
                 else
+                {
                     parent.Right = q;
+                }
             }
             else
                 Root = q;
@@ -357,7 +385,9 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Maths
             p.Parent = q;
             p.Left = q.Right;
             if (p.Left != null)
+            {
                 p.Left.Parent = p;
+            }
             q.Right = p;
         }
 
