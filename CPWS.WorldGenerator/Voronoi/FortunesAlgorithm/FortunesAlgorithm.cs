@@ -8,19 +8,20 @@ using CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure.Points;
 using CPWS.WorldGenerator.Noise;
 using System.Dynamic;
 using System.Diagnostics;
+using CP.Common.Random;
 
 namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
 {
     public class FortunesAlgorithm
     {
-        private Random rand;
+        private RandomHash rand;
         private int seed;
 
         public List<FSite> Sites { get; private set; }
         public LinkedList<VoronoiEdge> Edges { get; private set; }
         public List<Tuple<Point, Point>> Delaunay { get; private set; }
 
-        public int Seed { get => seed; set { seed = value; rand = value == 0 ? new Random() : new Random(seed); } }
+        public int Seed { get => seed; set { seed = value; rand = value == 0 ? new RandomHash() : new RandomHash(seed); } }
         public int PointCount { get; set; }
 
         private double minX;
@@ -81,11 +82,12 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm
         {
             List<FSite> sites = new List<FSite>();
 
+            int pos = 0;
             for (var i = 0; i < PointCount; i++)
             {
                 sites.Add(new FSite(
-                    rand.Next(0, (int)maxX),
-                    rand.Next(0, (int)maxY)));
+                    rand.Next(0, (int)maxX, pos++),
+                    rand.Next(0, (int)maxY, pos++)));
             }
 
             //uniq the points

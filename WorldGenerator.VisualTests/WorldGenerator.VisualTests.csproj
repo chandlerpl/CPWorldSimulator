@@ -25,10 +25,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Pages\PoissonDiscPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="SimplexNoiseWindow - Copy.xaml.cs">
       <SubType>Code</SubType>
       <DependentUpon>SimplexNoiseWindow - Copy.xaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\PoissonDiscPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

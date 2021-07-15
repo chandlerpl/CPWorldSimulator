@@ -15,9 +15,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Voronoi\BowyerAlgorithm\BowyerAlgorithm2DOriginal.cs~RFcad01a.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="CP.Common">
       <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.0\CP.Common.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ConvexHull\" />
+    <Folder Include="Utils\" />
   </ItemGroup>
 
 </Project>

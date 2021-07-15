@@ -41,9 +41,12 @@ namespace CPWS.WorldGenerator.Noise
 
         public abstract double Noise(int dimensions, params double[] vals);
 
-        public abstract double Octave(int iterations, int dimensions, params double[] vals);
+        public abstract double FractalFBM(int iterations, int dimensions, params double[] vals);
 
-        public abstract Task<double[,]> NoiseMap(int iterations, params int[] vals);
+        public abstract double FractalBillow(int iterations, int dimensions, params double[] vals);
+        public abstract double FractalRigid(int iterations, int dimensions, params double[] vals);
+
+        public abstract Task<double[,]> NoiseMap(int iterations, FractalType type, params int[] vals);
 
         public abstract double[,] NoiseMapNotAsync(int iterations, params int[] vals);
     }

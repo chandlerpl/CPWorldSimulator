@@ -10,15 +10,19 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure.Points
     {
         private double x = 0;
         private double y = 0;
+        private double z = 0;
 
         public virtual double X { get => x; set => x = value; }
         public virtual double Y { get => y; set => y = value; }
 
-        public Point() { }
+        //public Point() { }
 
         public const double Deg2Rad = Math.PI * 2F / 360F;
 
         public const double Rad2Deg = 1F / Deg2Rad;
+        public Point()
+        {
+        }
 
         public Point(double x, double y)
         {

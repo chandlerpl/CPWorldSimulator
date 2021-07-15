@@ -1,5 +1,4 @@
 ﻿using CP.Common.Utilities;
-using CPWS.WorldGenerator.CUDA.Noise;
 using CPWS.WorldGenerator.Noise;
 using System;
 using System.Collections.Generic;
@@ -46,8 +45,8 @@ namespace WorldGenerator.VisualTests.Pages
             SimplexNoise noise = new SimplexNoise((uint)items.Find(r => r.Name == "Seed").Value, (double)items.Find(r => r.Name == "Scale").Value, (double)items.Find(r => r.Name == "Persistance").Value, false);
 
             Bitmap src = new Bitmap((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height);
-            
-            float[,] vals = SimplexNoiseCUDA.NoiseMap(0.005f, 0.5f, (int)items.Find(r => r.Name == "Octaves").Value, (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0);
+
+            double[,] vals = noise.NoiseMap((int)items.Find(r => r.Name == "Octaves").Value, FractalType.FBM, (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0).Result;
 
             for (int y = 0; y < VisualElement.ResultImage.Height; y++)
             {

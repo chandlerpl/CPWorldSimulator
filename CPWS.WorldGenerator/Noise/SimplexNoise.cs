@@ -12,6 +12,8 @@ using System.Xml;
 
 namespace CPWS.WorldGenerator.Noise
 {
+    public enum FractalType { FBM, Billow, Rigid };
+
     public class SimplexNoise : NoiseGen
     {
         private static readonly double[] GValues = new [] { 0.2928932188134524, 0.21132486540518713, 0.16666666666666666, 0.1381966011250105 };
@@ -67,7 +69,7 @@ namespace CPWS.WorldGenerator.Noise
             }
         }
 
-        public override async Task<double[,]> NoiseMap(int iterations, params int[] vals)
+        public override async Task<double[,]> NoiseMap(int iterations, FractalType type, params int[] vals)
         {
             int len = vals.Length;
             int yLen = (len < 2 || vals[1] == 0) ? 1 : vals[1];
@@ -89,7 +91,18 @@ namespace CPWS.WorldGenerator.Noise
                     for (int x = 0; x < xLen; ++x)
                     {
                         st.values[0] = x;
-                        buffer[yCopy, x] = Octave(iterations, len, st, st.values);
+                        switch(type)
+                        {
+                            case FractalType.FBM:
+                                buffer[yCopy, x] = FractalFBM(iterations, len, st, st.values);
+                                break;
+                            case FractalType.Billow:
+                                buffer[yCopy, x] = FractalBillow(iterations, len, st, st.values);
+                                break;
+                            case FractalType.Rigid:
+                                buffer[yCopy, x] = FractalRigid(iterations, len, st, st.values);
+                                break;
+                        }
                     }
                 });
             }
@@ -117,16 +130,19 @@ namespace CPWS.WorldGenerator.Noise
                 for (int x = 0; x < xLen; ++x)
                 {
                     st.values[0] = x;
-                    buffer[y, x] = Octave(iterations, len, st, st.values);
+                    buffer[y, x] = FractalFBM(iterations, len, st, st.values);
                 }
             }
 
             return buffer;
         }
 
-        public override double Octave(int iterations, int dimensions, params double[] vals) => Octave(iterations, dimensions, new SimplexThread(dimensions), vals);
+        public override double FractalFBM(int iterations, int dimensions, params double[] vals) => FractalFBM(iterations, dimensions, new SimplexThread(dimensions), vals);
 
-        private double Octave(int iterations, int dimensions, SimplexThread st, params double[] vals)
+        public override double FractalBillow(int iterations, int dimensions, params double[] vals) => FractalBillow(iterations, dimensions, new SimplexThread(dimensions), vals);
+        public override double FractalRigid(int iterations, int dimensions, params double[] vals) => FractalRigid(iterations, dimensions, new SimplexThread(dimensions), vals);
+
+        private double FractalFBM(int iterations, int dimensions, SimplexThread st, params double[] vals)
         {
             double maxAmp = 0;
             double amp = 1;
@@ -149,6 +165,54 @@ namespace CPWS.WorldGenerator.Noise
             noise /= maxAmp;
 
             return noise;
+        }
+
+        private double FractalBillow(int iterations, int dimensions, SimplexThread st, params double[] vals)
+        {
+            double maxAmp = 0;
+            double amp = 1;
+            double freq = Scale;
+            double noise = 0;
+
+            for (int i = 0; i < iterations; ++i)
+            {
+                for (int j = 0; j < vals.Length; ++j)
+                {
+                    st.nVals[j] = vals[j] * freq;
+                }
+
+                noise += (Math.Abs(Noise(dimensions, st, st.nVals)) * 2 - 1) * amp;
+                maxAmp += amp;
+                amp *= Persistence;
+                freq *= 2;
+            }
+
+            noise /= maxAmp;
+
+            return noise;
+        }
+
+        private double FractalRigid(int iterations, int dimensions, SimplexThread st, params double[] vals)
+        {
+            double maxAmp = 0;
+            double amp = 1;
+            double freq = Scale;
+            double noise = 0;
+
+            for (int i = 0; i < iterations; ++i)
+            {
+                for (int j = 0; j < vals.Length; ++j)
+                {
+                    st.nVals[j] = vals[j] * freq;
+                }
+
+                noise += (1 - Math.Abs(Noise(dimensions, st, st.nVals))) * amp;
+                maxAmp += amp;
+                amp *= Persistence;
+                freq *= 2;
+            }
+
+            return noise / maxAmp;
         }
 
         public override double Noise(int dimensions, params double[] vals) => Noise(dimensions, new SimplexThread(dimensions), vals);

@@ -8,13 +8,7 @@ namespace CPWS.WorldGenerator.Voronoi.FortunesAlgorithm.Structure.Points
 {
     public class NoisyPoint : Point
     {
-        public NoisyPoint() { }
-        
-        public NoisyPoint(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
+        public NoisyPoint(double x, double y) : base(x, y) { }
 
         public double XNoise { get; set; } = 0;
         public double YNoise { get; set; } = 0;

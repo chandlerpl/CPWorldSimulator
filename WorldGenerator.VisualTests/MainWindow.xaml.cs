@@ -70,5 +70,20 @@ namespace WorldGenerator.VisualTests
 
             TabController.Items.Add(newTabItem);
         }
+
+        private void PoissonDiscPage_Click(object sender, RoutedEventArgs e)
+        {
+            TabItem newTabItem = new TabItem
+            {
+                Header = "PoissonDisc",
+                Name = "PoissonDisc",
+                Content = new Frame
+                {
+                    Content = new PoissonDiscPage()
+                }
+            };
+
+            TabController.Items.Add(newTabItem);
+        }
     }
 }

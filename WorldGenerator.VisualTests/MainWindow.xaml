@@ -12,6 +12,7 @@
                 <Button x:Name="HeatmapPage" Content="Heatmap" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="220" Click="HeatmapPage_Click"/>
                 <Button x:Name="SimplexNoisePage" Content="SimplexNoise" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="220" Click="SimplexNoisePage_Click"/>
                 <Button x:Name="VoronoiPage" Content="Voronoi Diagram" HorizontalAlignment="Left" Margin="10,130,0,0" VerticalAlignment="Top" Width="220" Click="VoronoiPage_Click"/>
+                <Button x:Name="PoissonDiscPage" Content="PoissonDisc" HorizontalAlignment="Left" Margin="10,89,0,0" VerticalAlignment="Top" Width="220" Click="PoissonDiscPage_Click"/>
             </Grid>
         </TabItem>
     </TabControl>

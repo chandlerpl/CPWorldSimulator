@@ -22,7 +22,7 @@ namespace CPWS.WorldGenerator.Maps
                 {
                     for (int x = 0; x < xin; x++)
                     {
-                        heatmap[yCopy, x] = Lerp(noise.Octave(4, 2, x, yCopy), gradient, .85) * (heightMap != null ? 1 - ((heightMap[yCopy, x] + 1) / 2) : 1);
+                        heatmap[yCopy, x] = Lerp(noise.FractalFBM(4, 2, x, yCopy), gradient, .85) * (heightMap != null ? 1 - ((heightMap[yCopy, x] + 1) / 2) : 1);
                     }
                 });
             }
