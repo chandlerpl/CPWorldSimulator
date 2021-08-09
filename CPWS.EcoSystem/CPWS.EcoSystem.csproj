@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CPWS.CUDACLI\CPWS.CUDACLI.vcxproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="CP.Common">
       <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.1\CP.Common.dll</HintPath>
     </Reference>

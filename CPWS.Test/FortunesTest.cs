@@ -1,6 +1,5 @@
 ﻿using CP.Common.Commands;
 using CP.Common.Maths;
-using CPWS.WorldGenerator.CUDA.Noise;
 using CPWS.WorldGenerator.Noise;
 using CPWS.WorldGenerator.PoissonDisc;
 using CPWS.WorldGenerator.Voronoi.BowyerAlgorithm;

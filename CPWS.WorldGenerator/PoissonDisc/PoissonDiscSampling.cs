@@ -2,24 +2,45 @@
 using CP.Common.Random;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace CPWS.WorldGenerator.PoissonDisc
 {
     public class PoissonDiscSampling
     {
-        public List<PoissonDisc> points = new List<PoissonDisc>();
         public double radius = 1.0;
         public uint seed = 24363;
+        public int k = 4;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="radius">Distance between each point</param>
+        /// <param name="seed">The seed for the random attribute</param>
         public PoissonDiscSampling(double radius, uint seed)
         {
             this.radius = radius;
             this.seed = seed;
         }
-        
-        public void Sample3D(Vector3D regionSize)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="radius">Distance between each point</param>
+        /// <param name="seed">The seed for the random attribute</param>
+        /// <param name="k">The number of attempts this algorithm runs to find a new point per point (default: 5)</param>
+        public PoissonDiscSampling(double radius, uint seed, int k)
         {
+            this.radius = radius;
+            this.seed = seed;
+            this.k = k;
+        }
+
+        public List<PoissonDisc> Sample3D(Vector3D regionSize, bool createNeighbours = false)
+        {
+            List<PoissonDisc> points = new List<PoissonDisc>();
+
             RandomHash hash = new RandomHash(seed);
             double cellSize = radius / 1.41421356237;
 
@@ -32,23 +53,29 @@ namespace CPWS.WorldGenerator.PoissonDisc
             grid[(int)(spawnPoints[0].X / cellSize), (int)(spawnPoints[0].Y / cellSize), (int)(spawnPoints[0].Z / cellSize)] = points.Count;
 
             int currVal = 1;
-            while(spawnPoints.Count > 0)
+            while (spawnPoints.Count > 0)
             {
                 int spawnIndex = hash.Next(0, spawnPoints.Count, currVal++);
                 Vector3D spawnCentre = spawnPoints[spawnIndex];
 
-                bool candidateAccepted = false;
-                for (int i = 0; i < 30; i++)
-                {
-                    double angle = hash.NextDouble(0, 1, (int)(spawnCentre.X * 100) + i, (int)(spawnCentre.Y * 100) + i, (int)(spawnCentre.Z * 100) + i) * Math.PI * 2;
-                    double angle2 = hash.NextDouble(0, 1, (int)(spawnCentre.X * 100) + i + 1, (int)(spawnCentre.Y * 100) + i + 1, (int)(spawnCentre.Z * 100) + i + 1) * Math.PI * 2;
-                    double x = Math.Cos(angle) * Math.Cos(angle2);
-                    double z = Math.Sin(angle) * Math.Cos(angle2);
-                    double y = Math.Sin(angle2);
+                double seed = hash.NextDouble(0, 1, currVal++);
+                double seed2 = hash.NextDouble(0, 1, currVal++);
+                double r = radius + 0.0000001;
+                double pi = 2 * Math.PI;
 
-                    Vector3D dir = new Vector3D(x, y, z);
-                    Vector3D candidate = spawnCentre + (dir * hash.NextDouble(radius, 2 * radius, (int)(spawnCentre.X * 1000) + i, (int)(spawnCentre.Y * 1000) + i, (int)(spawnCentre.Z * 1000) + i));
-                    if (IsValid3D(candidate, regionSize, cellSize, grid))
+                bool candidateAccepted = false;
+                for (int j = 0; j < k; j++)
+                {
+                    double theta = pi * (seed + 1.0 * j / k);
+                    double theta2 = pi * (seed2 + 1.0 * j / k);
+
+                    double x = spawnCentre.X + r * Math.Cos(theta) * Math.Cos(theta2);
+                    double y = spawnCentre.Y + r * Math.Sin(theta) * Math.Cos(theta2);
+                    double z = spawnCentre.Z + r * Math.Sin(theta2);
+
+                    Vector3D candidate = new Vector3D(x, y, z);
+
+                    if (IsValid3D(candidate, regionSize, cellSize, grid, points))
                     {
                         points.Add(new PoissonDisc(candidate, radius));
                         spawnPoints.Add(candidate);
@@ -57,11 +84,16 @@ namespace CPWS.WorldGenerator.PoissonDisc
                         break;
                     }
                 }
-                if(!candidateAccepted)
+                if (!candidateAccepted)
                     spawnPoints.RemoveAt(spawnIndex);
             }
+
+            if (createNeighbours)
+                return CreateNeighbourList3D(points, grid, cellSize);
+
+            return points;
         }
-        bool IsValid3D(Vector3D candidate, Vector3D sampleRegionSize, double cellSize, int[,,] grid)
+        bool IsValid3D(Vector3D candidate, Vector3D sampleRegionSize, double cellSize, int[,,] grid, List<PoissonDisc> points)
         {
             if (candidate.X >= 0 && candidate.X < sampleRegionSize.X && candidate.Y >= 0 && candidate.Y < sampleRegionSize.Y && candidate.Z >= 0 && candidate.Z < sampleRegionSize.Z)
             {
@@ -96,11 +128,65 @@ namespace CPWS.WorldGenerator.PoissonDisc
                 }
                 return true;
             }
+
             return false;
         }
 
-        public void Sample2D(Vector3D regionSize)
+        List<PoissonDisc> CreateNeighbourList3D(List<PoissonDisc> points, int[,,] grid, double cellSize)
         {
+            List<PoissonDisc> newPoints = new List<PoissonDisc>();
+
+            for (int x = 0; x < grid.GetLength(0); x++)
+            {
+                for (int y = 0; y < grid.GetLength(1); y++)
+                {
+                    for (int z = 0; z < grid.GetLength(2); z++)
+                    {
+                        int pointIndex = grid[x, y, z] - 1;
+                        if (pointIndex != -1)
+                        {
+                            PoissonDisc disc = points[pointIndex];
+                            newPoints.Add(disc);
+
+                            int searchStartX = Math.Max(0, x - 2);
+                            int searchEndX = Math.Min(x + 2, grid.GetLength(0) - 1);
+                            int searchStartY = Math.Max(0, y - 2);
+                            int searchEndY = Math.Min(y + 2, grid.GetLength(1) - 1);
+                            int searchStartZ = Math.Max(0, z - 2);
+                            int searchEndZ = Math.Min(z + 2, grid.GetLength(2) - 1);
+
+                            for (int x1 = searchStartX; x1 <= searchEndX; x1++)
+                            {
+                                for (int y1 = searchStartY; y1 <= searchEndY; y1++)
+                                {
+                                    for (int z1 = searchStartZ; z1 <= searchEndZ; z1++)
+                                    {
+                                        int pointIndex2 = grid[x1, y1, z1] - 1;
+                                        if (pointIndex2 != -1 && pointIndex2 != pointIndex)
+                                        {
+                                            PoissonDisc disc2 = points[pointIndex2];
+
+                                            double sqrDst = (disc2.position - disc.position).SqrMagnitude;
+                                            if (sqrDst < disc.radiusSquared * 2)
+                                            {
+                                                disc.AddNeighbour(disc2);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return newPoints;
+        }
+
+        public List<PoissonDisc> Sample2D(Vector3D regionSize, bool createNeighbours = false)
+        {
+            List<PoissonDisc> points = new List<PoissonDisc>();
+
             RandomHash hash = new RandomHash(seed);
             double cellSize = radius / 1.41421356237;
 
@@ -119,15 +205,19 @@ namespace CPWS.WorldGenerator.PoissonDisc
                 Vector3D spawnCentre = spawnPoints[spawnIndex];
 
                 bool candidateAccepted = false;
-                for (int i = 0; i < 30; i++)
-                {
-                    double angle = hash.NextDouble(0, 1, (int)(spawnCentre.X * 100) + i, (int)(spawnCentre.Y * 100) + i, i) * Math.PI * 2;
-                    double x = Math.Cos(angle);
-                    double y = Math.Sin(angle);
+                double seed = hash.NextDouble(0, 1, currVal);
+                double r = radius + 0.0000001;
+                double pi = 2 * Math.PI;
 
-                    Vector3D dir = new Vector3D(x, y, regionSize.Z);
-                    Vector3D candidate = spawnCentre + (dir * hash.NextDouble(radius, 2 * radius, (int)(spawnCentre.X * 1000) + i, (int)(spawnCentre.Y * 1000) + i, i));
-                    if (IsValid2D(candidate, regionSize, cellSize, grid))
+                for (int j = 0; j < k; j++)
+                {
+                    double theta = pi * (seed + 1.0 * j / k);
+
+                    double x = spawnCentre.X + r * Math.Cos(theta);
+                    double y = spawnCentre.Y + r * Math.Sin(theta);
+
+                    Vector3D candidate = new Vector3D(x, y, 0);
+                    if (IsValid2D(candidate, regionSize, cellSize, grid, points))
                     {
                         points.Add(new PoissonDisc(candidate, radius));
                         spawnPoints.Add(candidate);
@@ -139,8 +229,13 @@ namespace CPWS.WorldGenerator.PoissonDisc
                 if (!candidateAccepted)
                     spawnPoints.RemoveAt(spawnIndex);
             }
+
+            if (createNeighbours)
+                return CreateNeighbourList2D(points, grid, cellSize);
+
+            return points;
         }
-        bool IsValid2D(Vector3D candidate, Vector3D sampleRegionSize, double cellSize, int[,] grid)
+        bool IsValid2D(Vector3D candidate, Vector3D sampleRegionSize, double cellSize, int[,] grid, List<PoissonDisc> points)
         {
             if (candidate.X >= 0 && candidate.X < sampleRegionSize.X && candidate.Y >= 0 && candidate.Y < sampleRegionSize.Y)
             {
@@ -170,6 +265,49 @@ namespace CPWS.WorldGenerator.PoissonDisc
                 return true;
             }
             return false;
+        }
+
+        List<PoissonDisc> CreateNeighbourList2D(List<PoissonDisc> points, int[,] grid, double cellSize)
+        {
+            List<PoissonDisc> newPoints = new List<PoissonDisc>();
+
+            for (int x = 0; x < grid.GetLength(0); x++)
+            {
+                for (int y = 0; y < grid.GetLength(1); y++)
+                {
+                    int pointIndex = grid[x, y] - 1;
+                    if (pointIndex != -1)
+                    {
+                        PoissonDisc disc = points[pointIndex];
+                        newPoints.Add(disc);
+
+                        int searchStartX = Math.Max(0, x - 2);
+                        int searchEndX = Math.Min(x + 2, grid.GetLength(0) - 1);
+                        int searchStartY = Math.Max(0, y - 2);
+                        int searchEndY = Math.Min(y + 2, grid.GetLength(1) - 1);
+
+                        for (int x1 = searchStartX; x1 <= searchEndX; x1++)
+                        {
+                            for (int y1 = searchStartY; y1 <= searchEndY; y1++)
+                            {
+                                int pointIndex2 = grid[x1, y1] - 1;
+                                if (pointIndex2 != -1 && pointIndex2 != pointIndex)
+                                {
+                                    PoissonDisc disc2 = points[pointIndex2];
+
+                                    double sqrDst = (disc2.position - disc.position).SqrMagnitude;
+                                    if (sqrDst < disc.radiusSquared * 2)
+                                    {
+                                        disc.AddNeighbour(disc2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return newPoints;
         }
     }
 }

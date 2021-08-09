@@ -15,7 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CPWS.CUDACLI\CPWS.CUDACLI.vcxproj" />
     <ProjectReference Include="..\CPWS.EcoSystem\CPWS.EcoSystem.csproj" />
     <ProjectReference Include="..\CPWS.WorldGenerator\CPWS.WorldGenerator.csproj" />
   </ItemGroup>

@@ -1,5 +1,4 @@
 ﻿using CP.Common.Commands;
-using CPWS.WorldGenerator.CUDA.Noise;
 using CPWS.WorldGenerator.Noise;
 using CPWS.WorldGenerator.PoissonDisc;
 using System;
@@ -19,7 +18,7 @@ namespace CPWS.Test
             Name = "PoissonDisc";
             Desc = "Generates a Poisson Disc Sample";
             Aliases = new List<string>() { "poissondisc" };
-            ProperUse = "poissondisc [samples (default: 10)] [radius (default: 1)]";
+            ProperUse = "poissondisc [samples (default: 10)] [radius (default: 10)]";
 
             return true;
         }
@@ -48,9 +47,8 @@ namespace CPWS.Test
             {
                 PoissonDiscSampling sample = new PoissonDiscSampling(radius, 13235);
                 watch.Restart();
-                sample.Sample2D(new CP.Common.Maths.Vector3D(300, 300, 1));
+                sample.Sample3D(new CP.Common.Maths.Vector3D(5, 5, 5), true);
                 watch.Stop();
-                Console.WriteLine(sample.points.Count);
                 times[s] = watch.Elapsed.TotalMilliseconds;
             }
             Console.WriteLine(samples + ": avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max());

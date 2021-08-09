@@ -25,14 +25,14 @@ namespace CPWS.WorldGenerator.Noise
                 if (!useCuda)
                     return false;
 
-                if (!GPUUtilities.CheckCUDACapability())
+               // if (!GPUUtilities.CheckCUDACapability())
                     useCuda = false;
 
                 return useCuda;
             } set => useCuda = value; 
         }
 
-        public virtual int CudaId { get => GPUUtilities.GetStrongestCudaGpu(); }
+        //public virtual int CudaId { get => GPUUtilities.GetStrongestCudaGpu(); }
 
         public NoiseGen(uint seed)
         {

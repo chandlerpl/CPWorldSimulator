@@ -45,7 +45,11 @@ namespace WorldGenerator.VisualTests.Pages
             PoissonDiscSampling sampling = new PoissonDiscSampling((double)items.Find(r => r.Name == "Radius").Value, (uint)items.Find(r => r.Name == "Seed").Value);
             sampling.Sample2D(new CP.Common.Maths.Vector3D((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0));
 
+            PoissonDiscSampling sampling2 = new PoissonDiscSampling((double)items.Find(r => r.Name == "Radius").Value, (uint)items.Find(r => r.Name == "Seed").Value);
+            sampling2.Sample2D(new CP.Common.Maths.Vector3D((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0));
+
             System.Drawing.Pen blue = new System.Drawing.Pen(System.Drawing.Color.Blue, 8);
+            System.Drawing.Pen red = new System.Drawing.Pen(System.Drawing.Color.Red, 8);
             System.Drawing.Pen blackPoint = new System.Drawing.Pen(System.Drawing.Color.Black, 5);
             System.Drawing.Pen black = new System.Drawing.Pen(System.Drawing.Color.White, 10);
             Random rand = new Random();
@@ -57,6 +61,11 @@ namespace WorldGenerator.VisualTests.Pages
             {
                 graphics.DrawLine(blue, new PointF((float)sites.position.X - 1, (float)sites.position.Y - 1), new PointF((float)sites.position.X + 1, (float)sites.position.Y + 1));
                 
+            }
+            foreach (var sites in sampling2.points)
+            {
+                graphics.DrawLine(red, new PointF((float)sites.position.X - 1, (float)sites.position.Y - 1), new PointF((float)sites.position.X + 1, (float)sites.position.Y + 1));
+
             }
 
             VisualElement.Image = Utilities.BitmapToImageSource(src);
