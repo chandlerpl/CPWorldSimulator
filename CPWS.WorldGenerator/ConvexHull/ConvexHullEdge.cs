@@ -7,8 +7,9 @@ namespace CPWS.WorldGenerator.ConvexHull
 {
     public class ConvexHullEdge
     {
-        Vector3D pointA, pointB;
-        ConvexHullFace adjface1, adjface2;
+        public Vector3D pointA, pointB;
+        public ConvexHullFace adjface1, adjface2;
+        public bool remove = false;
 
         public ConvexHullEdge(Vector3D pointA, Vector3D pointB)
         {

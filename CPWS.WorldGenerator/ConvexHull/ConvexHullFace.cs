@@ -10,6 +10,7 @@ namespace CPWS.WorldGenerator.ConvexHull
         public Vector3D pointA;
         public Vector3D pointB;
         public Vector3D pointC;
+        public bool visible = false;
 
         public ConvexHullFace(Vector3D pointA, Vector3D pointB, Vector3D pointC)
         {
@@ -20,7 +21,7 @@ namespace CPWS.WorldGenerator.ConvexHull
 
         public void Reverse()
         {
-            Vector3D n = pointA;
+            Vector3D n = pointC;
             pointC = pointA;
             pointA = n;
         }
