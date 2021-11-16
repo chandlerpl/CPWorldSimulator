@@ -46,7 +46,7 @@ namespace WorldGenerator.VisualTests.Pages
 
             Bitmap src = new Bitmap((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height);
 
-            double[,] vals = noise.NoiseMap((int)items.Find(r => r.Name == "Octaves").Value, FractalType.FBM, (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0).Result;
+            double[,] vals = await noise.NoiseMap((int)items.Find(r => r.Name == "Octaves").Value, FractalType.FBM, (int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height, 0);
 
             for (int y = 0; y < VisualElement.ResultImage.Height; y++)
             {

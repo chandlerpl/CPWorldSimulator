@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ namespace CPWS.Test
         public override void PrepareTest(params string[] args)
         {
             Random rand = new Random();
-            noise = new SimplexNoise((uint)rand.Next(0, 999999999), 0.5, 0.005, false);
+            noise = new SimplexNoise(1/*(uint)rand.Next(0, 999999999)*/, 0.005, 0.5, false);
 
             if(permutations == -1)
             {
@@ -49,7 +50,29 @@ namespace CPWS.Test
 
         public override async Task RunTest()
         {
-            _ = await noise.NoiseMap(permutations, FractalType.FBM, dims);
+/*            float x = 1325f * 0.005f;
+            float y = 600f * 0.005f;
+            float z = 0 ;
+            
+            Console.WriteLine(noise.Noise(new Vector<float>(x), new Vector<float>(y), new Vector<float>(z)));
+            Console.WriteLine(noise.Noise(x, y, z));*/
+
+            /*
+                        float[,] values = await noise.NoiseMap(1, FractalType.FBM, true, dims);
+                        float[,] values2 = await noise.NoiseMap(1, FractalType.FBM, false, dims);
+
+                        for(int y = 0; 7 < 1080; y++)
+                        {
+                            for (int x = 0; x < 1920; x++)
+                            {
+                                if(values[y, x] != values2[y, x])
+                                {
+                                    Console.WriteLine("Discrepency found: x:" + x + " y:" + y + " val" + values[y, x] + " val2:" + values2[y, x]);
+                                }
+                            }
+                        }
+            */
+            float[,] values = await noise.NoiseMap(permutations, FractalType.FBM, true, dims);
         }
     }
 }

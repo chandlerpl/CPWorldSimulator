@@ -61,7 +61,7 @@ namespace WorldGenerator.VisualTests.Pages
             PoissonDiscSampling sampling = new PoissonDiscSampling((double)items.Find(r => r.Name == "Radius").Value, (uint)seed);
             sampling.Sample2D(new CP.Common.Maths.Vector3D(300, 300, 0));
             // 
-            List<Triangle> triangulation = voronoiGen.Generate(sampling.points.Select(point => point.position).ToList(), true);
+            //List<Triangle> triangulation = voronoiGen.Generate(sampling.points.Select(point => point.position).ToList(), true);
             List<VoronoiCell> cells = voronoiGen.GenerateVoronoi();
 
             //int relaxation = (int)items.Find(r => r.Name == "Relaxation").Value;
@@ -77,13 +77,13 @@ namespace WorldGenerator.VisualTests.Pages
             Bitmap src = new Bitmap((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height);
 
             using var graphics = Graphics.FromImage(src);
-            foreach (var sites in triangulation)
+/*            foreach (var sites in triangulation)
             {
                 foreach (var edge in sites.Edges)
                 {
                     graphics.DrawLine(blue, new PointF((float)edge.PointA.X + 300, (float)edge.PointA.Y + 300), new PointF((float)edge.PointB.X + 300, (float)edge.PointB.Y + 300));
                 }
-            }
+            }*/
             foreach (var sites in cells)
             {
                 foreach (var edge in sites.Edges)

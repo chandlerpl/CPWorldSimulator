@@ -57,7 +57,7 @@ namespace WorldGenerator.VisualTests.Pages
             Bitmap src = new Bitmap((int)VisualElement.ResultImage.Width, (int)VisualElement.ResultImage.Height);
 
             using var graphics = Graphics.FromImage(src);
-            foreach (var sites in sampling.points)
+/*            foreach (var sites in sampling.points)
             {
                 graphics.DrawLine(blue, new PointF((float)sites.position.X - 1, (float)sites.position.Y - 1), new PointF((float)sites.position.X + 1, (float)sites.position.Y + 1));
                 
@@ -66,7 +66,7 @@ namespace WorldGenerator.VisualTests.Pages
             {
                 graphics.DrawLine(red, new PointF((float)sites.position.X - 1, (float)sites.position.Y - 1), new PointF((float)sites.position.X + 1, (float)sites.position.Y + 1));
 
-            }
+            }*/
 
             VisualElement.Image = Utilities.BitmapToImageSource(src);
         }
