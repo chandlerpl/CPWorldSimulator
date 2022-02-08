@@ -183,7 +183,7 @@ namespace CPWS.WorldGenerator.Noise
                     {
                         for (int x = 0; x < xLen; ++x)
                         {
-                            buffer[yCopy, x] = FractalFBM(iterations, x, yCopy, vals[2]);
+                            //buffer[yCopy, x] = FractalFBM(iterations, x, yCopy, vals[2]);
                         }
                     });
                 }

@@ -54,14 +54,14 @@ namespace WorldGenerator.VisualTests.Pages
                 //UseDelaunay = (bool)items.Find(r => r.Name == "Use Delaunay").Value,
                 //UseNoisyEdges = (int)items.Find(r => r.Name == "Noisy Edges").Value > 0,
                 //NoisyEdgesNo = (int)items.Find(r => r.Name == "Noisy Edges").Value,
-                MaxX = 300,
-                MaxY = 300,
+                MaxX = 400,
+                MaxY = 400,
             };
             int seed = (int)items.Find(r => r.Name == "Seed").Value;
-            PoissonDiscSampling sampling = new PoissonDiscSampling((double)items.Find(r => r.Name == "Radius").Value, (uint)seed);
-            sampling.Sample2D(new CP.Common.Maths.Vector3D(300, 300, 0));
-            // 
-            //List<Triangle> triangulation = voronoiGen.Generate(sampling.points.Select(point => point.position).ToList(), true);
+            PoissonDiscSampling sampling = new PoissonDiscSampling(20, (uint)seed);
+            List<PoissonDisc> points = sampling.Sample2D(new CP.Common.Maths.Vector3D(400, 400, 0));
+            
+            List<Triangle> triangulation = voronoiGen.Generate(points.Select(point => point.position).ToList(), true);
             List<VoronoiCell> cells = voronoiGen.GenerateVoronoi();
 
             //int relaxation = (int)items.Find(r => r.Name == "Relaxation").Value;

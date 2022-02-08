@@ -86,7 +86,7 @@ namespace CPWS.WorldGenerator.Voronoi.BowyerAlgorithm
         {
             if (sites == null) GeneratePoints();
             else Sites = sites;
-            List<Triangle> triangulation = new List<Triangle>(sites.Count * 4 - (sites.Count - 1));
+            List<Triangle> triangulation = new List<Triangle>(Sites.Count * 4 - (Sites.Count - 1));
             Triangle superTriangle = new Triangle(new Vector3D(MaxX / 2, MaxY * 2), new Vector3D(-MaxX, -MaxY), new Vector3D(MaxX * 2, -MaxY), false);
 
             triangulation.Add(superTriangle);
@@ -202,7 +202,7 @@ namespace CPWS.WorldGenerator.Voronoi.BowyerAlgorithm
                 {
                     Vector3D point = triangle.GetCircumcenter().Clone();
 
-                    if (point.X > MaxX)
+                   /* if (point.X > MaxX)
                         point.X = MaxX;
                     else if (point.X < 0)
                         point.X = 0;
@@ -210,7 +210,7 @@ namespace CPWS.WorldGenerator.Voronoi.BowyerAlgorithm
                     if (point.Y > MaxY)
                         point.Y = MaxY;
                     else if (point.Y < 0)
-                        point.Y = 0;
+                        point.Y = 0;*/
 
                     cell.Points.Add(point);
                 }

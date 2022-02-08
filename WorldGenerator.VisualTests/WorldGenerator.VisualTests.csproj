@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <Reference Include="CP.Common">
-      <HintPath>..\..\..\..\..\Desktop\CP Repos\netstandard2.0\CP.Common.dll</HintPath>
+      <HintPath>..\..\CPLibrary\CP.Common\bin\Release\netstandard2.0\CP.Common.dll</HintPath>
     </Reference>
     <Reference Include="CPWS.CUDACLI">
       <HintPath>..\x64\Release\CPWS.CUDACLI.dll</HintPath>

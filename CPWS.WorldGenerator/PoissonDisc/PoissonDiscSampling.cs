@@ -9,6 +9,9 @@ namespace CPWS.WorldGenerator.PoissonDisc
 {
     public class PoissonDiscSampling
     {
+
+        private static readonly double pi = 2 * Math.PI;
+
         public double radius = 1.0;
         public uint seed = 24363;
         public int k = 4;
@@ -61,7 +64,6 @@ namespace CPWS.WorldGenerator.PoissonDisc
                 double seed = hash.NextDouble(0, 1, currVal++);
                 double seed2 = hash.NextDouble(0, 1, currVal++);
                 double r = radius + 0.0000001;
-                double pi = 2 * Math.PI;
 
                 bool candidateAccepted = false;
                 for (int j = 0; j < k; j++)
@@ -183,18 +185,19 @@ namespace CPWS.WorldGenerator.PoissonDisc
             return newPoints;
         }
 
-        public List<PoissonDisc> Sample2D(Vector3D regionSize, bool createNeighbours = false)
+        public List<PoissonDisc> Sample2D(Vector3D regionSize, bool createNeighbours = false, Vector3D centerPos = null, Func<Vector3D, float> calcRadius = null)
         {
             List<PoissonDisc> points = new List<PoissonDisc>();
 
             RandomHash hash = new RandomHash(seed);
-            double cellSize = radius / 1.41421356237;
+            double cellSize = (radius * 2) / 1.41421356237;
 
             int[,] grid = new int[(int)Math.Ceiling(regionSize.X / cellSize), (int)Math.Ceiling(regionSize.Y / cellSize)];
             List<Vector3D> spawnPoints = new List<Vector3D>
             {
-                regionSize / 2
+                centerPos ?? regionSize / 2
             };
+
             points.Add(new PoissonDisc(spawnPoints[0], radius));
             grid[(int)(spawnPoints[0].X / cellSize), (int)(spawnPoints[0].Y / cellSize)] = points.Count;
 
@@ -206,9 +209,10 @@ namespace CPWS.WorldGenerator.PoissonDisc
 
                 bool candidateAccepted = false;
                 double seed = hash.NextDouble(0, 1, currVal);
-                double r = radius + 0.0000001;
-                double pi = 2 * Math.PI;
-
+                double nextRadius = calcRadius == null ? radius : calcRadius(spawnCentre);
+                double distance = radius + nextRadius;
+                double r = distance + 0.0000001;
+                
                 for (int j = 0; j < k; j++)
                 {
                     double theta = pi * (seed + 1.0 * j / k);
@@ -219,7 +223,16 @@ namespace CPWS.WorldGenerator.PoissonDisc
                     Vector3D candidate = new Vector3D(x, y, 0);
                     if (IsValid2D(candidate, regionSize, cellSize, grid, points))
                     {
-                        points.Add(new PoissonDisc(candidate, radius));
+                        if(calcRadius != null)
+                        {
+                            if(distance > maxRadius)
+                            {
+                                radius = nextRadius;
+                                maxRadius = distance;
+                                searchZone = (int)Math.Ceiling(distance / cellSize);
+                            }
+                        }
+                        points.Add(new PoissonDisc(candidate, nextRadius));
                         spawnPoints.Add(candidate);
                         grid[(int)(candidate.X / cellSize), (int)(candidate.Y / cellSize)] = points.Count;
                         candidateAccepted = true;
@@ -235,16 +248,19 @@ namespace CPWS.WorldGenerator.PoissonDisc
 
             return points;
         }
+
+        double maxRadius = 0f;
+        int searchZone = 2;
         bool IsValid2D(Vector3D candidate, Vector3D sampleRegionSize, double cellSize, int[,] grid, List<PoissonDisc> points)
         {
             if (candidate.X >= 0 && candidate.X < sampleRegionSize.X && candidate.Y >= 0 && candidate.Y < sampleRegionSize.Y)
             {
                 int cellX = (int)(candidate.X / cellSize);
                 int cellY = (int)(candidate.Y / cellSize);
-                int searchStartX = Math.Max(0, cellX - 2);
-                int searchEndX = Math.Min(cellX + 2, grid.GetLength(0) - 1);
-                int searchStartY = Math.Max(0, cellY - 2);
-                int searchEndY = Math.Min(cellY + 2, grid.GetLength(1) - 1);
+                int searchStartX = Math.Max(0, cellX - searchZone);
+                int searchEndX = Math.Min(cellX + searchZone, grid.GetLength(0) - 1);
+                int searchStartY = Math.Max(0, cellY - searchZone);
+                int searchEndY = Math.Min(cellY + searchZone, grid.GetLength(1) - 1);
 
                 for (int x = searchStartX; x <= searchEndX; x++)
                 {
