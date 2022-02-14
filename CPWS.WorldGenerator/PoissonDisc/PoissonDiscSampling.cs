@@ -190,50 +190,47 @@ namespace CPWS.WorldGenerator.PoissonDisc
             List<PoissonDisc> points = new List<PoissonDisc>();
 
             RandomHash hash = new RandomHash(seed);
-            double cellSize = (radius * 2) / 1.41421356237;
+            double cellSize = (radius * 2) / 1.41421356237; // Minimum distance between cells divided by sqrt(2)
 
             int[,] grid = new int[(int)Math.Ceiling(regionSize.X / cellSize), (int)Math.Ceiling(regionSize.Y / cellSize)];
-            List<Vector3D> spawnPoints = new List<Vector3D>
-            {
-                centerPos ?? regionSize / 2
-            };
+            List<PoissonDisc> spawnPoints = new List<PoissonDisc>
+        {
+            new PoissonDisc(centerPos ?? regionSize / 2, radius)
+        };
 
-            points.Add(new PoissonDisc(spawnPoints[0], radius));
-            grid[(int)(spawnPoints[0].X / cellSize), (int)(spawnPoints[0].Y / cellSize)] = points.Count;
+            points.Add(spawnPoints[0]);
+            grid[(int)(spawnPoints[0].position.X / cellSize), (int)(spawnPoints[0].position.Y / cellSize)] = points.Count;
 
-            int currVal = 1;
+            int currVal = 0;
             while (spawnPoints.Count > 0)
             {
-                int spawnIndex = hash.Next(0, spawnPoints.Count, currVal++);
-                Vector3D spawnCentre = spawnPoints[spawnIndex];
+                int spawnIndex = hash.Next(0, spawnPoints.Count, ++currVal);
+                PoissonDisc spawnCentre = spawnPoints[spawnIndex];
 
                 bool candidateAccepted = false;
                 double seed = hash.NextDouble(0, 1, currVal);
-                double nextRadius = calcRadius == null ? radius : calcRadius(spawnCentre);
-                double distance = radius + nextRadius;
+                double nextRadius = calcRadius == null ? radius : calcRadius(spawnCentre.position);
+                double distance = spawnCentre.radius + nextRadius;
                 double r = distance + 0.0000001;
-                
+
                 for (int j = 0; j < k; j++)
                 {
                     double theta = pi * (seed + 1.0 * j / k);
 
-                    double x = spawnCentre.X + r * Math.Cos(theta);
-                    double y = spawnCentre.Y + r * Math.Sin(theta);
+                    double x = spawnCentre.position.X + r * Math.Cos(theta);
+                    double y = spawnCentre.position.Y + r * Math.Sin(theta);
 
                     Vector3D candidate = new Vector3D(x, y, 0);
-                    if (IsValid2D(candidate, regionSize, cellSize, grid, points))
+                    if (IsValid2D(candidate, nextRadius, regionSize, cellSize, grid, points))
                     {
-                        if(calcRadius != null)
+                        if (distance > maxRadius)
                         {
-                            if(distance > maxRadius)
-                            {
-                                radius = nextRadius;
-                                maxRadius = distance;
-                                searchZone = (int)Math.Ceiling(distance / cellSize);
-                            }
+                            maxRadius = distance;
+                            searchZone = (int)Math.Ceiling(distance / cellSize);
                         }
-                        points.Add(new PoissonDisc(candidate, nextRadius));
-                        spawnPoints.Add(candidate);
+                        PoissonDisc disc = new PoissonDisc(candidate, nextRadius);
+                        points.Add(disc);
+                        spawnPoints.Add(disc);
                         grid[(int)(candidate.X / cellSize), (int)(candidate.Y / cellSize)] = points.Count;
                         candidateAccepted = true;
                         break;
@@ -251,7 +248,7 @@ namespace CPWS.WorldGenerator.PoissonDisc
 
         double maxRadius = 0f;
         int searchZone = 2;
-        bool IsValid2D(Vector3D candidate, Vector3D sampleRegionSize, double cellSize, int[,] grid, List<PoissonDisc> points)
+        bool IsValid2D(Vector3D candidate, double radius, Vector3D sampleRegionSize, double cellSize, int[,] grid, List<PoissonDisc> points)
         {
             if (candidate.X >= 0 && candidate.X < sampleRegionSize.X && candidate.Y >= 0 && candidate.Y < sampleRegionSize.Y)
             {
@@ -271,7 +268,8 @@ namespace CPWS.WorldGenerator.PoissonDisc
                         {
                             PoissonDisc disc = points[pointIndex];
                             double sqrDst = (candidate - disc.position).SqrMagnitude;
-                            if (sqrDst < disc.radiusSquared)
+                            double r = disc.radius + radius;
+                            if (sqrDst < r * r)
                             {
                                 return false;
                             }
