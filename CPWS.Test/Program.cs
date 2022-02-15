@@ -12,6 +12,7 @@ namespace CPWS.Test
         {
             CommandSystem = new CommandSystem();
 
+            Console.WriteLine(Math.Cos(3.12414));
             while (true)
             {
                 Console.Write("Please enter a command: ");

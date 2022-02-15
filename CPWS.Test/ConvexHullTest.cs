@@ -47,9 +47,8 @@ namespace CPWS.Test
 
             for (int s = 0; s < samples; s++)
             {
-                PoissonDiscSampling sample = new PoissonDiscSampling(radius, 84357);
                 List<Vector3D> points = new List<Vector3D>();
-                List<PoissonDisc> tPoints = sample.Sample3D(new Vector3D(5, 5, 5), true);
+                List<PoissonDisc> tPoints = PoissonDiscSampling.Sample3D(84357, radius, new Vector3D(5, 5, 5), 4, false);
 
                 foreach (PoissonDisc disc in tPoints)
                 {

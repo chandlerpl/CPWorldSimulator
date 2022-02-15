@@ -1,5 +1,4 @@
-﻿using CP.Common.Commands;
-using CPWS.WorldGenerator.Noise;
+﻿using CPWS.WorldGenerator.Noise;
 using CPWS.WorldGenerator.PoissonDisc;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CPWS.Test
 {
-    class PoissonDiscTest : Command
+    class PoissonDiscTest : CP.Common.Commands.Command
     {
         public override bool Init()
         {
@@ -26,7 +25,7 @@ namespace CPWS.Test
         public override bool Execute(object obj, List<string> args)
         {
             int samples = args.Count > 1 ? int.Parse(args[1]) : 10;
-            double radius = args.Count > 2 ? double.Parse(args[2]) : 10;
+            double radius = args.Count > 2 ? double.Parse(args[2]) : 0.5;
 
             runTest(samples, radius);
 
@@ -43,15 +42,16 @@ namespace CPWS.Test
             Console.WriteLine("Cores: " + Environment.ProcessorCount);
             Console.WriteLine("64bit:" + Environment.Is64BitProcess + Environment.NewLine);
 
+            int count = 0;
             for (int s = 0; s < samples; s++)
             {
-                PoissonDiscSampling sample = new PoissonDiscSampling(radius, 13235);
                 watch.Restart();
-                sample.Sample3D(new CP.Common.Maths.Vector3D(5, 5, 5), true);
+                List<PoissonDisc> discs = PoissonDiscSampling.Sample2D(13235, radius, new CP.Common.Maths.Vector3D(100, 100, 100), 8, false);
                 watch.Stop();
+                count = discs.Count;
                 times[s] = watch.Elapsed.TotalMilliseconds;
             }
-            Console.WriteLine(samples + ": avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max());
+            Console.WriteLine(samples + ": avg => " + times.Average() + " | best => " + times.Min() + " | worst => " + times.Max() + " | count => " + count);
         }
     }
 }
